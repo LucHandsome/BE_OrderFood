@@ -7,7 +7,7 @@ const bodyParser = require("body-parser");
 const data = require("./Data/data.js")
 dotenv.config()
 const app = express()
-const port = process.env.PORT || 3001
+const PORT = process.env.PORT || 3001
 
 app.use((err, req, res, next) => {
     console.error(err.stack);
