@@ -14,7 +14,7 @@ const server = init(app); // Khởi tạo server với socket.io
 const PORT = process.env.PORT || 3001;
 
 // Mongoose connection
-mongoose.connect(process.env.MONGODB_URI)
+mongoose.connect("mongodb+srv://thanhluc0606:Luc060603@cluster0.szybplt.mongodb.net/")
   .then(() => console.log('Connected to MongoDB'))
   .catch(err => {
     console.error('Error connecting to MongoDB:', err);
@@ -36,6 +36,6 @@ app.use((err, req, res, next) => {
     res.status(500).send("Something broke!");
 });
 
-server.listen(PORT, () => {
-    console.log(`Server is running on http://localhost:${PORT}`);
+server.listen(3001, () => {
+    console.log(`Server is running on http://localhost: 3001`);
 });

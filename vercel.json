@@ -17,6 +17,6 @@
     }
   ],
   "env": {
-    "URI": "mongodb+srv://thanhluc0606:Luc060603@cluster0.szybplt.mongodb.net/"
+    "MONGODB_URI": "mongodb+srv://thanhluc0606:Luc060603@cluster0.szybplt.mongodb.net/"
   }
-}
+} 
