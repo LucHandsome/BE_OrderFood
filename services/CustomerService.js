@@ -8,7 +8,7 @@ const signUpCustomer = async (customerData) => {
     // Kiểm tra xem email đã tồn tại chưa
     const existingCustomer = await Customer.findOne({ email });
     if (existingCustomer) {
-        throw new Error('Email đã tồn tại');
+        throw new Error('Email đã tồn tại.');
     }
 
     // Mã hóa mật khẩu
