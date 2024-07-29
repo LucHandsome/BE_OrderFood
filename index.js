@@ -24,7 +24,9 @@ mongoose.connect(process.env.MONGODB_URI)
 
 app.use(bodyParser.json());
 app.use(cors()); // Cho phép tất cả các nguồn gốc
-
+app.get('/',(req,res)=>{
+  res.json({message:'Hello world'})
+})
 // Định nghĩa các routes
 routes(app);
 
