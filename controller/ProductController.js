@@ -86,9 +86,57 @@ const deleteProduct = async (req, res) => {
         });
     }
 };
+const getProductsByStore = async (req, res) => {
+    try {
+        const { storeId } = req.params;
+
+        if (!mongoose.Types.ObjectId.isValid(storeId)) {
+            return res.status(400).json({
+                status: 'ERR',
+                message: 'Invalid store id'
+            });
+        }
+
+        const result = await ProductService.getProductsByStore(storeId);
+        return res.status(200).json(result);
+    } catch (e) {
+        return res.status(500).json({
+            status: 'ERR',
+            message: e.message
+        });
+    }
+};
+const getProductById = async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        // Gọi dịch vụ để lấy thông tin sản phẩm
+        const product = await ProductService.getProductById(id);
+
+        if (product) {
+            return res.status(200).json({
+                status: 'OK',
+                data: product
+            });
+        } else {
+            return res.status(404).json({
+                status: 'ERR',
+                message: 'Product not found'
+            });
+        }
+    } catch (e) {
+        return res.status(500).json({
+            status: 'ERR',
+            message: e.message
+        });
+    }
+};
+
 module.exports = {
     createProduct,
     updateProduct,
     getAllProduct,
-    deleteProduct
+    deleteProduct,
+    getProductsByStore,
+    getProductById
 };

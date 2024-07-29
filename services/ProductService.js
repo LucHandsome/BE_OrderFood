@@ -135,9 +135,48 @@ const deleteProduct = (productId) => {
         }
     });
 };
+
+const getProductsByStore = async (storeId) => {
+    try {
+        // Tìm sản phẩm dựa trên Store_id
+        const products = await Product.find({ Store_id: storeId });
+        
+        // Trả về kết quả với trạng thái và dữ liệu
+        return {
+            status: 'OK',
+            message: 'SUCCESS',
+            data: products
+        };
+    } catch (e) {
+        // Xử lý lỗi và trả về thông báo lỗi
+        return {
+            status: 'ERR',
+            message: e.message
+        };
+    }
+};
+const getProductById = (productId) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            const product = await Product.findById(productId);
+
+            if (product) {
+                return resolve(product);
+            } else {
+                return resolve(null);
+            }
+
+        } catch (e) {
+            return reject(e);
+        }
+    });
+};
+
 module.exports = {
     createProduct,
     updateProduct,
     getAllProduct,
-    deleteProduct
+    deleteProduct,
+    getProductsByStore,
+    getProductById
 };

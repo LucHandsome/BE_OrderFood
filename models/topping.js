@@ -1,14 +1,17 @@
 const mongoose = require('mongoose');
 
+// Topping Schema
 const toppingSchema = new mongoose.Schema({
-    Topping_id: { type: String, required: true, unique: true },
-    Food_id: { type: String, required: true },
-    Topping_name: { type: String, required: true },
-    Price: { type: Number, required: true },
-    Food_picture: { type: String, required: true },
-    Store_id: { type: mongoose.Schema.Types.ObjectId, ref: 'Store', required: true }
+    toppingName: { type: String, required: true },  // Tên của topping
+    toppingGroupID: { 
+        type: mongoose.Schema.Types.ObjectId,  // Sử dụng ObjectId để liên kết với ToppingGroup
+        ref: 'ToppingGroup',
+        required: true
+    },
+    type: { type: String, required: true } // Loại của topping
 });
 
-const Product = mongoose.model('Product', productSchema);
+// Tạo model từ schema
+const Topping = mongoose.model('Topping', toppingSchema);
 
-module.exports = Product;
+module.exports = Topping;
