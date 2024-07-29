@@ -173,6 +173,28 @@ const getOrdersByStoreAndStatus2 = async (req, res) => {
         });
     }
 };
+
+const handlePressPayCallback = async (req, res) => {
+    const { orderID, status } = req.body;
+
+    if (!orderID || !status) {
+        return res.status(400).json({ message: 'orderID và status là bắt buộc' });
+    }
+
+    try {
+        // Cập nhật trạng thái thanh toán của đơn hàng
+        const updatedOrder = await orderService.updatePaymentStatus(orderID, status);
+
+        if (updatedOrder) {
+            res.status(200).json({ message: 'Trạng thái thanh toán đã được cập nhật thành công', order: updatedOrder });
+        } else {
+            res.status(404).json({ message: 'Không tìm thấy đơn hàng' });
+        }
+    } catch (error) {
+        console.error('Lỗi khi cập nhật trạng thái thanh toán:', error);
+        res.status(500).json({ message: 'Lỗi khi cập nhật trạng thái thanh toán' });
+    }
+};
 module.exports = {
     createOrder,
     getPendingOrders,
@@ -180,5 +202,6 @@ module.exports = {
     getOrdersByDriverAndStatus,
     getOrdersByDriverAndStatus2,
     getOrdersByStoreAndStatus,
-    getOrdersByStoreAndStatus2
+    getOrdersByStoreAndStatus2,
+    handlePressPayCallback
 };

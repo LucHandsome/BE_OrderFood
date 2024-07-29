@@ -60,6 +60,11 @@ const findOrdersByStoreAndStatus2 = async (storeId, status) => {
         throw new Error('Error fetching orders: ' + error.message);
     }
 };
+//PressPay
+const updatePaymentStatus = async (orderID, status) => {
+    const paymentStatus = status === 'completed' ? 'Đã thanh toán' : 'Chưa thanh toán';
+    return await Order.findByIdAndUpdate(orderID, { paymentStatus }, { new: true });
+};
 module.exports = {
     createOrder,
     getPendingOrders,
@@ -67,5 +72,6 @@ module.exports = {
     findOrdersByDriverAndStatus,
     findOrdersByDriverAndStatus2,
     findOrdersByStoreAndStatus,
-    findOrdersByStoreAndStatus2
+    findOrdersByStoreAndStatus2,
+    updatePaymentStatus
 };
