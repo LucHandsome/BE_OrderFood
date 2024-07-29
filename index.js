@@ -14,7 +14,7 @@ const server = init(app); // Khởi tạo server với socket.io
 const PORT = process.env.PORT || 3001;
 
 // Mongoose connection
-mongoose.connect("mongodb+srv://thanhluc0606:Luc060603@cluster0.szybplt.mongodb.net/")
+mongoose.connect("mongodb+srv://thanhluc0606:Luc060603@cluster0.szybplt.mongodb.net/test")// đặt tên này là k dô thằng ddb đâu
   .then(() => console.log('Connected to MongoDB'))
   .catch(err => {
     console.error('Error connecting to MongoDB:', err);
