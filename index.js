@@ -11,7 +11,7 @@ dotenv.config();
 const app = express();
 const server = init(app); // Khởi tạo server với socket.io
 
-const PORT = process.env.PORT || 3001;
+// const PORT = process.env.PORT || 3001;
 
 // Mongoose connection
 mongoose.connect("mongodb+srv://thanhluc0606:Luc060603@cluster0.szybplt.mongodb.net/test")// đặt tên này là k dô thằng ddb đâu
@@ -36,6 +36,6 @@ app.use((err, req, res, next) => {
     res.status(500).send("Something broke!");
 });
 
-server.listen(3001, () => {
+server.listen(4001, () => {
     console.log(`Server is running on http://localhost: 3001`);
 });
