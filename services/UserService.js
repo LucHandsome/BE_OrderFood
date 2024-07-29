@@ -1,5 +1,5 @@
 const User = require("../models/TaiKhoanCuaHang.js");
-const bcrypt = require("bcrypt");
+const bcrypt = require('bcryptjs');
 const { generateAccessToken, generateRefreshToken } = require("./JwtService.js");
 
 const createUser = (newUser) => {
