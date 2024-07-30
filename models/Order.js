@@ -7,10 +7,10 @@ const orderSchema = new Schema({
         ref: 'Customer',
         required: true
     },
-    cart: {
+    cart: [{
         type: Array,
         required: true
-    },
+    }],
     deliveryInfo: {
         name: {
             type: String,

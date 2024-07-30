@@ -1,14 +1,14 @@
 const orderService = require('../services/OrderService');
 
 
+const paymentService = require('../services/paymentservice')
+
 const createOrder = async (req, res) => {
     try {
         console.log('Request body:', req.body); // Log the incoming request body
-        if (!req.body.paymentStatus) {
-            req.body.paymentStatus = 'Chưa thanh toán';
-        }
+
         const order = await orderService.createOrder(req.body);
-        // Do not assign a driver automatically here
+        
         res.status(201).json({ status: 'OK', data: order });
     } catch (error) {
         console.error('Error creating order:', error);
@@ -16,13 +16,14 @@ const createOrder = async (req, res) => {
     }
 };
 
+
 const getPendingOrders = async (req, res) => {
     try {
         const pendingOrders = await orderService.getPendingOrders();
         res.status(200).json({ status: 'OK', data: pendingOrders });
     } catch (error) {
         console.error('Error fetching pending orders:', error);
-        res.status(500).json({ status: 'ERROR', message: error.message });
+        res.status(500).json({ status: 'ERROR', message: error });
     }
 };
 

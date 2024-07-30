@@ -4,32 +4,20 @@ const paymentService = require('../services/paymentservice');
 
 const handlePaymentStatus = async (req, res) => {
     const { orderID, status } = req.body;
-
-    if (!orderID || !status) {
-        return res.status(400).json({
-            status: 'ERR',
-            message: 'orderID and status are required'
-        });
-    }
-
+    console.log(orderID,status)
     try {
-        const result = await paymentService.updateOrderStatus(orderID, status);
-
-        if (result.success) {
+    
+        const result = await paymentService.updateOrderStatus(orderID);
+        if(result){
             return res.status(200).json({
                 status: 'OK',
-                message: 'Order status updated successfully'
-            });
-        } else {
-            return res.status(400).json({
-                status: 'ERR',
-                message: 'Failed to update order status'
-            });
+                message: 'Order status updated successfully'})
         }
     } catch (error) {
-        return res.status(500).json({
+        console.log(error)
+        return res.status(499).json({
             status: 'ERR',
-            message: error.message
+            message: error
         });
     }
 };

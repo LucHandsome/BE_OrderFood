@@ -1,24 +1,24 @@
 const Order = require('../models/Order');
 const Driver = require('../models/Driver');
-const { getIo } = require('../socket'); // Import getIo từ socket.js
+const { getIo } = require('../socket'); 
 
 const createOrder = async (orderData) => {
-    if (!orderData.deliveryInfo || !orderData.deliveryInfo.phone) {
+    if (!orderData.deliveryInfo) {
         throw new Error('deliveryInfo.phone is required');
     }
-    orderData.status = 'Chờ xác nhận'; // Ensure the initial status is "Chờ xác nhận"
-    orderData.driverId = null; // Ensure the initial driverId is null
+    orderData.status = 'Chờ xác nhận'; 
+    orderData.driverId = null; 
     
     // Set default paymentStatus if not provided
     if (!orderData.paymentStatus) {
         orderData.paymentStatus = 'Chưa thanh toán';
     }
-
+    
     const order = new Order(orderData);
     await order.save();
 
-    const io = getIo(); // Get the instance of io
-    io.emit('newOrder', order); // Use io to emit the newOrder event
+    const io = getIo(); 
+    io.emit('newOrder', order);
     
     return order;
 };

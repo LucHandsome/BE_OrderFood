@@ -2,16 +2,11 @@
 
 const Order = require('../models/Order'); // Adjust the path as needed
 
-const updateOrderStatus = async (orderID, status) => {
+const updateOrderStatus = async (orderID) => {
     try {
         // Assuming you have an Order model with an update method
-        const result = await Order.updateOne({ _id: orderID }, { status });
-
-        if (result.nModified > 0) {
-            return { success: true };
-        } else {
-            return { success: false };
-        }
+        const result = await Order.findByIdAndUpdate(orderID, {paymentStatus: "Đã thanh toán" });
+        return result
     } catch (error) {
         throw new Error(error.message);
     }
