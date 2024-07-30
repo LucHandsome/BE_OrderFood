@@ -65,6 +65,16 @@ const updatePaymentStatus = async (orderID, status) => {
     const paymentStatus = status === 'completed' ? 'Đã thanh toán' : 'Chưa thanh toán';
     return await Order.findByIdAndUpdate(orderID, { paymentStatus }, { new: true });
 };
+
+const getOrderById = async (id) => {
+    try {
+        const order = await Order.findById(id); // Sử dụng phương thức tìm theo ID của Mongoose
+
+        return order;
+    } catch (error) {
+        throw new Error(error.message);
+    }
+};
 module.exports = {
     createOrder,
     getPendingOrders,
@@ -73,5 +83,6 @@ module.exports = {
     findOrdersByDriverAndStatus2,
     findOrdersByStoreAndStatus,
     findOrdersByStoreAndStatus2,
-    updatePaymentStatus
+    updatePaymentStatus,
+    getOrderById
 };

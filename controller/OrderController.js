@@ -195,6 +195,38 @@ const handlePressPayCallback = async (req, res) => {
         res.status(500).json({ message: 'Lỗi khi cập nhật trạng thái thanh toán' });
     }
 };
+
+const getOrderById = async (req, res) => {
+    const { id } = req.params;
+
+    if (!id) {
+        return res.status(400).json({
+            status: 'ERR',
+            message: 'Order ID is required'
+        });
+    }
+
+    try {
+        const order = await orderService.getOrderById(id);
+
+        if (order) {
+            return res.status(200).json({
+                status: 'OK',
+                data: order
+            });
+        } else {
+            return res.status(404).json({
+                status: 'ERR',
+                message: 'Order not found'
+            });
+        }
+    } catch (error) {
+        return res.status(500).json({
+            status: 'ERR',
+            message: error.message
+        });
+    }
+};
 module.exports = {
     createOrder,
     getPendingOrders,
@@ -203,5 +235,6 @@ module.exports = {
     getOrdersByDriverAndStatus2,
     getOrdersByStoreAndStatus,
     getOrdersByStoreAndStatus2,
-    handlePressPayCallback
+    handlePressPayCallback,
+    getOrderById
 };

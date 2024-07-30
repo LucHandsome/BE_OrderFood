@@ -9,6 +9,7 @@ router.get('/orders', orderController.getOrdersByDriverAndStatus);
 router.get('/orders2', orderController.getOrdersByDriverAndStatus2);
 router.get('/orderstore', orderController.getOrdersByStoreAndStatus);
 router.get('/orderstore2', orderController.getOrdersByStoreAndStatus2);
+router.get('/orders/:id', orderController.getOrderById);
 
 //PressPay
 router.post('/presspay/callback', orderController.handlePressPayCallback);
