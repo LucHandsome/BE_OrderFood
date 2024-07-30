@@ -20,11 +20,7 @@ app.use((err, req, res, next) => {
 });
 
 app.use(bodyParser.json());
-app.use(cors({
-    origin: 'https://project-order-food.vercel.app', // URL của frontend của bạn
-    methods: ['GET', 'POST', 'PUT', 'DELETE'],
-    allowedHeaders: ['Content-Type', 'Authorization']
-}));
+app.use(cors());
 routes(app);
 
 server.listen(PORT, () => {

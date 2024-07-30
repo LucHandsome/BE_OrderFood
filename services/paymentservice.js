@@ -1,6 +1,6 @@
 // paymentService.js
 
-const Order = require('../models/orderModel'); // Adjust the path as needed
+const Order = require('../models/Order'); // Adjust the path as needed
 
 const updateOrderStatus = async (orderID, status) => {
     try {
