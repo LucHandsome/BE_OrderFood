@@ -1,6 +1,6 @@
 // paymentController.js
 
-const paymentService = require('../services/paymentService');
+const paymentService = require('../services/paymentservice');
 
 const handlePaymentStatus = async (req, res) => {
     const { orderID, status } = req.body;
