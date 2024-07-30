@@ -6,6 +6,8 @@ const toppingRouter = require('./toppingRouter')
 const customerRouter = require('./CustomerRouter')
 const driverRouter = require('./driverRouter')
 const orderRouter = require('./OrderRouter')
+const payment = require('./paymentRouter')
+
 const auth = require('../middleware/auth');
 
 module.exports = (app) => {
@@ -17,4 +19,5 @@ module.exports = (app) => {
     app.use('/api/customers', customerRouter);
     app.use('/api/driver', driverRouter);
     app.use('/api/order', orderRouter);
+    app.use('/api/payment',payment);
 };
