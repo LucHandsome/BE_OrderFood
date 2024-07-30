@@ -47,7 +47,7 @@ const createPaymentTransaction = async (req, res) => {
     }
 
     try {
-        const response = await paymentservice.initiatePayment(private_key, amount, currency, message, userID, orderID, return_url);
+        const response = await paymentService.initiatePayment(private_key, amount, currency, message, userID, orderID, return_url);
 
         if (response.data.url) {
             res.status(200).json({
