@@ -8,7 +8,7 @@ const createOrder = async (req, res) => {
         console.log('Request body:', req.body); // Log the incoming request body
 
         const order = await orderService.createOrder(req.body);
-        
+
         res.status(201).json({ status: 'OK', data: order });
     } catch (error) {
         console.error('Error creating order:', error);
@@ -198,7 +198,7 @@ const handlePressPayCallback = async (req, res) => {
 };
 
 const getOrderById = async (req, res) => {
-    const { id } = req.params;
+    const { id } = req.query;
 
     if (!id) {
         return res.status(400).json({

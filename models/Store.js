@@ -7,6 +7,7 @@ const StoreSchema = new mongoose.Schema({
     Store_address: { type: String, required: true },
     Store_picture: { type: String },
     Store_status: { type: String },
+    Store_phone: { type: String},
     Store_LoaiKD: { type: String, required: true },
     Store_timeOpen: { type: String },
     Store_timeClose: { type: String },

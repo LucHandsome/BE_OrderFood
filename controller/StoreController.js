@@ -8,16 +8,17 @@ const createStore = async (req, res) => {
             Store_address,
             Store_picture,
             Store_status,
+            Store_phone,
             Store_LoaiKD,
             Store_timeOpen,
             Store_timeClose,
             userId // Lấy userId từ request body
         } = req.body;
 
-        if (!Store_name || !Store_address || !Store_LoaiKD || !userId) {
+        if (!Store_name || !Store_address || !Store_LoaiKD || !Store_phone || !userId) {
             return res.status(400).json({
                 status: 'ERR',
-                message: 'The required fields are missing: Store_name, Store_address, Store_LoaiKD, userId'
+                message: 'The required fields are missing: Store_name, Store_address, Store_LoaiKD, !Store_phone, userId'
             });
         }
 
@@ -26,6 +27,7 @@ const createStore = async (req, res) => {
             Store_address,
             Store_picture,
             Store_status,
+            Store_phone,
             Store_LoaiKD,
             Store_timeOpen,
             Store_timeClose,

@@ -7,6 +7,7 @@ const createStore = (newStore) => {
             Store_address,
             Store_picture,
             Store_status,
+            Store_phone,
             Store_LoaiKD,
             Store_timeOpen,
             Store_timeClose,
@@ -22,13 +23,20 @@ const createStore = (newStore) => {
                     message: 'The store name is already taken'
                 });
             }
-
+            const checkPhone = await Store.findOne({ Store_phone});
+            if (checkPhone !== null){
+                return resolve({
+                    status: 'ERR',
+                    message: 'The store phone is already taken'
+                })
+            }
             // Create the new store
             const createdStore = await Store.create({
                 Store_name,
                 Store_address,
                 Store_picture,
                 Store_status,
+                Store_phone,
                 Store_LoaiKD,
                 Store_timeOpen,
                 Store_timeClose,
