@@ -16,5 +16,7 @@ router.get('/:customerId', CustomerController.getCustomerById);
 
 // Lấy tất cả khách hàng
 router.get('/', CustomerController.getAllCustomers);
+// Route mới cho đăng nhập qua SSO
+router.post('/sign-in-sso', CustomerController.signInWithSSO);
 
 module.exports = router;

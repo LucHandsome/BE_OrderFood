@@ -47,10 +47,21 @@ const getAllCustomers = async (req, res) => {
     }
 };
 
+// Controller xử lý đăng nhập qua SSO
+const signInWithSSO = async (req, res) => {
+    try {
+        const { code } = req.body;  // Nhận mã code từ frontend gửi lên
+        const result = await CustomerService.signInWithSSO(code);
+        res.status(200).json(result);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
 module.exports = {
     signUpCustomer,
     signInCustomer,
     updateCustomer,
     getCustomerById,
-    getAllCustomers
+    getAllCustomers,
+    signInWithSSO 
 };
