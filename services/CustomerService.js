@@ -73,34 +73,30 @@ const getAllCustomers = async () => {
 // Thêm hàm mới để xử lý đăng nhập qua SSO
 const signInWithSSO = async (code) => {
     const pointer = new PointerStrategy({
-        clientId: '66f45beb2b1d190d4d448637',  // Đã thay đổi clientId
-        clientSecret: '0c6e42fa7695bf7858930478', // Đã thay đổi clientSecret
-        callbackUrl: '.', // URL mà Pointer chuyển hướng về sau khi đăng nhập thành công
+        clientId: '66f45beb2b1d190d4d448637',
+        clientSecret: '0c6e42fa7695bf7858930478',
+        callbackUrl: 'https://project-order-food.vercel.app/' // Đặt URL callback chính xác
     });
 
     try {
-        // Lấy access token từ mã xác thực (code) gửi từ Frontend
         const token = await pointer.getAccessToken(code);
-        
-        // Lấy thông tin người dùng từ access token
         const user = await pointer.getUser(token.accessToken);
+        
+        console.log('Thông tin người dùng:', user); // In ra thông tin người dùng để kiểm tra
 
-        // Kiểm tra xem người dùng đã tồn tại trong hệ thống chưa
         let existingCustomer = await Customer.findOne({ email: user.email });
-
+        
         if (!existingCustomer) {
-            // Nếu chưa có tài khoản, tạo tài khoản mới
             existingCustomer = await Customer.create({
                 email: user.email,
-                dateOfBirth: user.dateOfBirth || new Date(), // Có thể thêm thông tin này nếu có
+                dateOfBirth: user.dateOfBirth || new Date(),
                 gender: user.gender || 'Khác',
                 customerName: user.name,
                 profileImage: user.profileImage || '',
-                password: 'SSO_USER', // Người dùng đăng nhập bằng SSO sẽ không cần mật khẩu
+                password: 'SSO_USER',
             });
         }
 
-        // Tạo JWT token cho người dùng
         const jwtToken = jwt.sign({ id: existingCustomer._id }, process.env.JWT_SECRET, { expiresIn: '1d' });
 
         return {
@@ -113,10 +109,11 @@ const signInWithSSO = async (code) => {
             }
         };
     } catch (error) {
-        console.error('Lỗi khi đăng nhập qua SSO:', error);
+        console.error('Lỗi khi đăng nhập qua SSO:', error.message || error);
         throw new Error('Đăng nhập qua SSO không thành công.');
     }
 };
+
 module.exports = {
     signUpCustomer,
     signInCustomer,
