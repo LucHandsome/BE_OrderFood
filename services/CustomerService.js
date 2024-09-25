@@ -75,14 +75,14 @@ const signInWithSSO = async (code) => {
     const pointer = new PointerStrategy({
         clientId: '66f47f24b47c42cc24d6b336',
         clientSecret: '866f22a1c995e42d7d172b4b',
-        callbackUrl: 'https://project-order-food.vercel.app/restaurantlist/' // Đặt URL callback chính xác
+        callbackUrl: 'https://project-order-food.vercel.app/restaurantlist/'
     });
 
     try {
         const token = await pointer.getAccessToken(code);
         const user = await pointer.getUser(token.accessToken);
-        
-        console.log('Thông tin người dùng:', user); // In ra thông tin người dùng để kiểm tra
+
+        console.log('Thông tin người dùng:', user);
 
         let existingCustomer = await Customer.findOne({ email: user.email });
         
@@ -95,6 +95,9 @@ const signInWithSSO = async (code) => {
                 profileImage: user.profileImage || '',
                 password: 'SSO_USER',
             });
+            console.log('Tài khoản mới đã được tạo:', existingCustomer); // Kiểm tra tài khoản mới tạo
+        } else {
+            console.log('Tài khoản đã tồn tại:', existingCustomer); // Kiểm tra tài khoản đã tồn tại
         }
 
         const jwtToken = jwt.sign({ id: existingCustomer._id }, process.env.JWT_SECRET, { expiresIn: '1d' });
@@ -113,6 +116,7 @@ const signInWithSSO = async (code) => {
         throw new Error('Đăng nhập qua SSO không thành công.');
     }
 };
+
 
 module.exports = {
     signUpCustomer,
