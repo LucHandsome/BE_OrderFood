@@ -73,9 +73,9 @@ const getAllCustomers = async () => {
 // Thêm hàm mới để xử lý đăng nhập qua SSO
 const signInWithSSO = async (code) => {
     const pointer = new PointerStrategy({
-        clientId: '66f45beb2b1d190d4d448637',
-        clientSecret: '0c6e42fa7695bf7858930478',
-        callbackUrl: 'https://project-order-food.vercel.app/' // Đặt URL callback chính xác
+        clientId: '66f47f24b47c42cc24d6b336',
+        clientSecret: '866f22a1c995e42d7d172b4b',
+        callbackUrl: 'https://project-order-food.vercel.app/restaurantlist/' // Đặt URL callback chính xác
     });
 
     try {
