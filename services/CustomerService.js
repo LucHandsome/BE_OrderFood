@@ -73,10 +73,9 @@ const getAllCustomers = async () => {
 // Thêm hàm mới để xử lý đăng nhập qua SSO
 const signInWithSSO = async (code) => {
     const pointer = new PointerStrategy({
-        clientId: '66f5209f821b325f37ffb08a',
-        clientSecret: '1ee23b95c2e4a6a36652d72a',
-        callbackUrl: 'https://project-order-food.vercel.app'
-
+        clientId: '66f52f6a37370353ddcc9b3d',
+        clientSecret: '08ef0cd03d588dc8d09795c1',
+        callbackUrl: 'https://order-app-88-037717b27b20.herokuapp.com/api/customers/sign-in-sso'
     });
 
     try {
@@ -85,20 +84,21 @@ const signInWithSSO = async (code) => {
 
         console.log('Thông tin người dùng:', user);
 
-        let existingCustomer = await Customer.findOne({ email: user.email });
+        // Chỉ lấy username và email
+        const { email, username } = user;
+
+        let existingCustomer = await Customer.findOne({ email });
         
         if (!existingCustomer) {
+            // Nếu chưa tồn tại, tạo mới
             existingCustomer = await Customer.create({
-                email: user.email,
-                dateOfBirth: user.dateOfBirth || new Date(),
-                gender: user.gender || 'Khác',
-                customerName: user.name,
-                profileImage: user.profileImage || '',
-                password: 'SSO_USER',
+                email,
+                customerName: username || 'Khách hàng', // Sử dụng username hoặc tên mặc định
+                password: 'SSO_USER', // Mật khẩu không cần mã hóa
             });
-            console.log('Tài khoản mới đã được tạo:', existingCustomer); // Kiểm tra tài khoản mới tạo
+            console.log('Tài khoản mới đã được tạo:', existingCustomer);
         } else {
-            console.log('Tài khoản đã tồn tại:', existingCustomer); // Kiểm tra tài khoản đã tồn tại
+            console.log('Tài khoản đã tồn tại:', existingCustomer);
         }
 
         const jwtToken = jwt.sign({ id: existingCustomer._id }, process.env.JWT_SECRET, { expiresIn: '1d' });
@@ -117,6 +117,7 @@ const signInWithSSO = async (code) => {
         throw new Error('Đăng nhập qua SSO không thành công.');
     }
 };
+
 
 
 module.exports = {
