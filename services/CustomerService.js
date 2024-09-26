@@ -1,6 +1,7 @@
 const Customer = require('../models/Customer');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+import { PointerStrategy } from "oauth-pointer";
 
 const signUpCustomer = async (customerData) => {
     const { email, password, ...otherData } = customerData;
