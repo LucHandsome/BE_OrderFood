@@ -106,13 +106,12 @@ const signInWithSSO = async (code) => {
         }
 
         // Tạo JWT Token
-        const jwtToken = jwt.sign({ id: existingCustomer._id }, process.env.JWT_SECRET, { expiresIn: '1d' });
+        // const jwtToken = jwt.sign({ id: existingCustomer._id }, process.env.JWT_SECRET, { expiresIn: '1d' });
 
         return {
             message: 'Đăng nhập thành công qua SSO',
-            token: jwtToken,
+            // token: jwtToken,
             data: {
-                id: existingCustomer._id,
                 email: existingCustomer.email,
                 name: existingCustomer.customerName
             }
