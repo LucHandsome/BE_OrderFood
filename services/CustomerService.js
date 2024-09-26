@@ -1,7 +1,7 @@
 const Customer = require('../models/Customer');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-import { PointerStrategy } from "oauth-pointer";
+const { PointerStrategy } = require("oauth-pointer");
 
 const signUpCustomer = async (customerData) => {
     const { email, password, ...otherData } = customerData;
@@ -74,9 +74,9 @@ const getAllCustomers = async () => {
 // Thêm hàm mới để xử lý đăng nhập qua SSO
 const signInWithSSO = async (code) => {
     const pointer = new PointerStrategy({
-        clientId: '66f56aea6e145e234173008f',
-        clientSecret: '85c282949f1d5affb4812a5a',
-        callbackUrl: 'https://project-order-food.vercel.app/loginpage'
+        clientId: '66f57407339e1fafaaba3f61',
+        clientSecret: '337ab1150baacc55dd5a0913',
+        callbackUrl: 'https://project-order-food.vercel.app/authPage'
     });
 
     try {
