@@ -13,8 +13,8 @@ dotenv.config();
 const app = express();
 const server = init(app); // Khởi tạo server với socket.io
 mongoose.connect(process.env.MONGODB_URI, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
+    // useNewUrlParser: true,
+    // useUnifiedTopology: true,
     serverSelectionTimeoutMS: 50000 // Tăng thời gian chờ nếu cần
   })
   .then(() => console.log('Connected to MongoDB'))
