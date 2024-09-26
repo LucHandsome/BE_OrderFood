@@ -85,17 +85,15 @@ const signInWithSSO = async (code) => {
 
         console.log('Thông tin người dùng:', user);
 
-        // Chỉ lấy username và email
         const { email, username } = user;
 
         let existingCustomer = await Customer.findOne({ email });
         
         if (!existingCustomer) {
-            // Nếu chưa tồn tại, tạo mới
             existingCustomer = await Customer.create({
                 email,
-                customerName: username || 'Khách hàng', // Sử dụng username hoặc tên mặc định
-                password: 'SSO_USER', // Mật khẩu không cần mã hóa
+                customerName: username || 'Khách hàng',
+                password: 'SSO_USER',
             });
             console.log('Tài khoản mới đã được tạo:', existingCustomer);
         } else {
@@ -118,6 +116,7 @@ const signInWithSSO = async (code) => {
         throw new Error('Đăng nhập qua SSO không thành công.');
     }
 };
+
 
 
 
