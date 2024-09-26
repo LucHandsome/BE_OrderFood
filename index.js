@@ -5,6 +5,8 @@ const mongoose = require('mongoose');
 const routes = require('./routes/index.js');
 const bodyParser = require('body-parser');
 const { init } = require('./socket'); // Import hàm init từ socket.js
+const { PointerStrategy } = require("oauth-pointer");
+
 
 dotenv.config();
 

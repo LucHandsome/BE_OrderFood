@@ -49,19 +49,17 @@ const getAllCustomers = async (req, res) => {
 
 // Controller xử lý đăng nhập qua SSO
 const signInWithSSO = async (req, res) => {
+    const { code } = req.query;
+
+    if (!code) {
+        return res.status(400).json({ message: 'Mã code không được cung cấp.' });
+    }
+
     try {
-        const { code } = req.body;
-
-        if (!code) {
-            return res.status(400).json({ message: 'Mã code không được cung cấp.' });
-        }
-
         const result = await CustomerService.signInWithSSO(code);
-        
-        // Thay vì redirect, trả về dữ liệu cho frontend
         res.status(200).json(result);
     } catch (error) {
-        console.error('Lỗi khi xác thực SSO:', error);
+        console.error('Lỗi khi xử lý phản hồi từ Pointer:', error);
         res.status(500).json({ message: error.message });
     }
 };

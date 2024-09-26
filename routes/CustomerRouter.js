@@ -19,4 +19,6 @@ router.get('/', CustomerController.getAllCustomers);
 // Route mới cho đăng nhập qua SSO
 router.post('/sign-in-sso', CustomerController.signInWithSSO);
 
+// router.get('/auth/pointer',CustomerController.signInWithSSO)
+
 module.exports = router;
