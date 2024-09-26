@@ -76,7 +76,7 @@ const signInWithSSO = async (code) => {
     const pointer = new PointerStrategy({
         clientId: '66f52f6a37370353ddcc9b3d',
         clientSecret: '08ef0cd03d588dc8d09795c1',
-        callbackUrl: 'https://order-app-88-037717b27b20.herokuapp.com/api/customers/sign-in-sso'
+        callbackUrl: '.'
     });
 
     try {

@@ -58,13 +58,14 @@ const signInWithSSO = async (req, res) => {
 
         const result = await CustomerService.signInWithSSO(code);
         
-        // Thay vì trả về JSON, redirect đến dashboard
-        res.redirect(`https://project-order-food.vercel.app/restaurantlist?token=${result.token}`);
+        // Thay vì redirect, trả về dữ liệu cho frontend
+        res.status(200).json(result);
     } catch (error) {
         console.error('Lỗi khi xác thực SSO:', error);
         res.status(500).json({ message: error.message });
     }
 };
+
 
 
 module.exports = {
