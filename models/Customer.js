@@ -6,7 +6,7 @@ const CustomerSchema = new mongoose.Schema(
         dateOfBirth: { type: Date, required: false },
         gender: { type: String, required: false, enum: ['Nam', 'Nữ', 'Khác'] },
         password: { type: String, required: false },
-        customerName: { type: String, required: true },
+        customerName: { type: String, required: flase },
         profileImage: { type: String, required: false }
     },
     {
