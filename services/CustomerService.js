@@ -74,9 +74,9 @@ const getAllCustomers = async () => {
 // Thêm hàm mới để xử lý đăng nhập qua SSO
 const signInWithSSO = async (code) => {
     const pointer = new PointerStrategy({
-        clientId: '66f52f6a37370353ddcc9b3d',
-        clientSecret: '08ef0cd03d588dc8d09795c1',
-        callbackUrl: '.'
+        clientId: '66f56aea6e145e234173008f',
+        clientSecret: '85c282949f1d5affb4812a5a',
+        callbackUrl: 'https://project-order-food.vercel.app/loginpage'
     });
 
     try {
@@ -93,7 +93,6 @@ const signInWithSSO = async (code) => {
             existingCustomer = await Customer.create({
                 email,
                 customerName: username || 'Khách hàng',
-                password: 'SSO_USER',
             });
             console.log('Tài khoản mới đã được tạo:', existingCustomer);
         } else {
