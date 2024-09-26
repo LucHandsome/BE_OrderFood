@@ -76,9 +76,9 @@ const signInWithSSO = async (code) => {
     console.log('Code nhận được từ frontend:', code); // Log mã code
 
     const pointer = new PointerStrategy({
-        clientId: '66f57407339e1fafaaba3f61',
-        clientSecret: '337ab1150baacc55dd5a0913',
-        callbackUrl: 'https://project-order-food.vercel.app/authPage'
+        clientId: '66f5c35ba567efbc6e99262d',
+        clientSecret: '6cf0d92f878aa8e1c7791eee',
+        callbackUrl: 'https://project-order-food.vercel.app/restaurantlist'
     });
 
     try {
