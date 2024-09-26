@@ -78,7 +78,7 @@ const signInWithSSO = async (code) => {
     const pointer = new PointerStrategy({
         clientId: '66f57407339e1fafaaba3f61',
         clientSecret: '337ab1150baacc55dd5a0913',
-        callbackUrl: 'https://project-order-food.vercel.app/authPage'
+        callbackUrl: '.'
     });
 
     try {

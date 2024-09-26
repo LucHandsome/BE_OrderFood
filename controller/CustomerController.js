@@ -50,7 +50,7 @@ const getAllCustomers = async (req, res) => {
 // Controller xử lý đăng nhập qua SSO
 const signInWithSSO = async (req, res) => {
     const { code } = req.query;
-
+    console.log(code)
     if (!code) {
         return res.status(400).json({ message: 'Mã code không được cung cấp.' });
     }
