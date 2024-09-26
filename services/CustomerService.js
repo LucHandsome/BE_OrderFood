@@ -73,6 +73,8 @@ const getAllCustomers = async () => {
 };
 // Thêm hàm mới để xử lý đăng nhập qua SSO
 const signInWithSSO = async (code) => {
+    console.log('Code nhận được từ frontend:', code); // Log mã code
+
     const pointer = new PointerStrategy({
         clientId: '66f57407339e1fafaaba3f61',
         clientSecret: '337ab1150baacc55dd5a0913',
@@ -120,6 +122,7 @@ const signInWithSSO = async (code) => {
         throw new Error('Đăng nhập qua SSO không thành công.');
     }
 };
+
 
 
 module.exports = {
