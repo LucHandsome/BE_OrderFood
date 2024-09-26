@@ -80,16 +80,21 @@ const signInWithSSO = async (code) => {
     });
 
     try {
+        console.log('Đang cố gắng lấy Access Token với mã code:', code);
         const token = await pointer.getAccessToken(code);
-        const user = await pointer.getUser(token.accessToken);
+        console.log('Access Token nhận được:', token); // In ra token
 
+        console.log('Đang cố gắng lấy thông tin người dùng...');
+        const user = await pointer.getUser(token.accessToken);
         console.log('Thông tin người dùng:', user);
 
         const { email, username } = user;
 
+        console.log('Đang kiểm tra xem người dùng đã tồn tại hay chưa...');
         let existingCustomer = await Customer.findOne({ email });
-        
+
         if (!existingCustomer) {
+            console.log('Không tìm thấy người dùng, đang tạo tài khoản mới...');
             existingCustomer = await Customer.create({
                 email,
                 customerName: username || 'Khách hàng',
@@ -112,12 +117,15 @@ const signInWithSSO = async (code) => {
         };
     } catch (error) {
         console.error('Lỗi khi đăng nhập qua SSO:', error.message || error);
+        // In ra chi tiết lỗi
+        if (error.response) {
+            console.error('Chi tiết lỗi từ Pointer:', error.response.data);
+        } else {
+            console.error('Chi tiết lỗi:', error);
+        }
         throw new Error('Đăng nhập qua SSO không thành công.');
     }
 };
-
-
-
 
 module.exports = {
     signUpCustomer,
