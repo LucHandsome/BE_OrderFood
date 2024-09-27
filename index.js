@@ -10,6 +10,8 @@ const { PointerStrategy } = require("oauth-pointer");
 
 dotenv.config();
 
+app.use(express.json()); // Thay thế body-parser
+
 const app = express();
 const server = init(app); // Khởi tạo server với socket.io
 mongoose.connect(process.env.MONGODB_URI, {
@@ -27,13 +29,13 @@ app.use((err, req, res, next) => {
     res.status(500).send("Something broke!");
 });
 
-app.use(bodyParser.json());
-// app.use(cors({
-//     origin: 'https://project-order-food.vercel.app', // Thay bằng miền frontend của bạn
-//     methods: ['GET', 'POST', 'PUT', 'DELETE'], // Các phương thức được phép
-//     credentials: true // Nếu bạn cần gửi cookie hoặc thông tin xác thực
-// }));
-app.use(cors());
+// app.use(bodyParser.json());
+app.use(cors({
+    origin: 'https://project-order-food.vercel.app', // Thay bằng miền frontend của bạn
+    methods: ['GET', 'POST', 'PUT', 'DELETE'], // Các phương thức được phép
+    credentials: true // Nếu bạn cần gửi cookie hoặc thông tin xác thực
+}));
+// app.use(cors());
 routes(app);
 
 server.listen(PORT, () => {
