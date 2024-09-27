@@ -49,6 +49,7 @@ const getAllCustomers = async (req, res) => {
 
 // Controller xử lý đăng nhập qua SSO
 const signInWithSSO = async (req, res) => {
+    console.log('Request body:', req.body); 
     const { code } = req.body;
     console.log(code)
     if (!code) {
