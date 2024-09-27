@@ -49,8 +49,6 @@ const signInCustomer = async ({ email, password }) => {
     return { message: 'Đăng nhập thành công', token, data: customerData };
 };
 
-
-
 const updateCustomer = async (customerId, updateData) => {
     const customer = await Customer.findByIdAndUpdate(customerId, updateData, { new: true });
     if (!customer) {
@@ -76,9 +74,9 @@ const signInWithSSO = async (code) => {
     console.log('Code nhận được từ frontend:', code); // Log mã code
 
     const pointer = new PointerStrategy({
-        clientId: '66f5c35ba567efbc6e99262d',
-        clientSecret: '6cf0d92f878aa8e1c7791eee',
-        callbackUrl: 'https://project-order-food.vercel.app/restaurantlist'
+        clientId: '66f57407339e1fafaaba3f61',
+        clientSecret: '337ab1150baacc55dd5a0913',
+        callbackUrl: 'https://project-order-food.vercel.app/authPage'
     });
 
     try {
@@ -90,32 +88,29 @@ const signInWithSSO = async (code) => {
         const user = await pointer.getUser(accessToken);
         console.log('Thông tin người dùng:', user);
 
-        const { email, username } = user;
+        // const { email, username } = user;
 
-        // Kiểm tra xem khách hàng đã tồn tại trong DB chưa
-        let existingCustomer = await Customer.findOne({ email });
-        if (!existingCustomer) {
-            // Nếu không tồn tại, tạo tài khoản mới
-            existingCustomer = await Customer.create({
-                email,
-                customerName: username || 'Khách hàng',
-            });
-            console.log('Tài khoản mới đã được tạo:', existingCustomer);
-        } else {
-            console.log('Tài khoản đã tồn tại:', existingCustomer);
-        }
+        // let existingCustomer = await Customer.findOne({ email });
+        // if (!existingCustomer) {
+        //     existingCustomer = await Customer.create({
+        //         email,
+        //         customerName: username || 'Khách hàng',
+        //     });
+        //     console.log('Tài khoản mới đã được tạo:', existingCustomer);
+        // } else {
+        //     console.log('Tài khoản đã tồn tại:', existingCustomer);
+        // }
 
-        // Tạo JWT Token
-        const jwtToken = jwt.sign({ id: existingCustomer._id }, process.env.JWT_SECRET, { expiresIn: '1d' });
+        // const jwtToken = jwt.sign({ id: existingCustomer._id }, process.env.JWT_SECRET, { expiresIn: '1d' });
 
-        return {
-            message: 'Đăng nhập thành công qua SSO',
-            token: jwtToken,
-            data: {
-                email: existingCustomer.email,
-                name: existingCustomer.customerName
-            }
-        };
+        // return {
+        //     message: 'Đăng nhập thành công qua SSO',
+        //     token: jwtToken,
+        //     data: {
+        //         email: existingCustomer.email,
+        //         name: existingCustomer.customerName
+        //     }
+        // };
     } catch (error) {
         console.error('Lỗi khi đăng nhập qua SSO:', error.message || error);
         throw new Error('Đăng nhập qua SSO không thành công.');
