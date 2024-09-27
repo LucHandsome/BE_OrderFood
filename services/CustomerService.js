@@ -85,37 +85,41 @@ const signInWithSSO = async (code) => {
         console.log('Access Token nhận được:', accessToken);
 
         // Lấy thông tin người dùng
-        const user = await pointer.getUser(accessToken);
+        const user = await pointer.getUser(accessToken.accessToken);
         console.log('Thông tin người dùng:', user);
 
-        // const { email, username } = user;
+        const { _id: userId, email } = user; // Lấy ID và email từ thông tin người dùng
 
-        // let existingCustomer = await Customer.findOne({ email });
-        // if (!existingCustomer) {
-        //     existingCustomer = await Customer.create({
-        //         email,
-        //         customerName: username || 'Khách hàng',
-        //     });
-        //     console.log('Tài khoản mới đã được tạo:', existingCustomer);
-        // } else {
-        //     console.log('Tài khoản đã tồn tại:', existingCustomer);
-        // }
+        let existingCustomer = await Customer.findOne({ email });
+        if (!existingCustomer) {
+            existingCustomer = await Customer.create({
+                email,
+                customerName: 'Khách hàng', // Có thể bỏ qua trường này nếu không cần
+                // Nếu bạn không muốn lưu customerName, hãy xóa dòng này
+                // Thêm trường userId vào trong database
+                userId // Lưu ID vào database
+            });
+            console.log('Tài khoản mới đã được tạo:', existingCustomer);
+        } else {
+            console.log('Tài khoản đã tồn tại:', existingCustomer);
+        }
 
-        // const jwtToken = jwt.sign({ id: existingCustomer._id }, process.env.JWT_SECRET, { expiresIn: '1d' });
+        const jwtToken = jwt.sign({ id: existingCustomer._id }, process.env.JWT_SECRET, { expiresIn: '1d' });
 
-        // return {
-        //     message: 'Đăng nhập thành công qua SSO',
-        //     token: jwtToken,
-        //     data: {
-        //         email: existingCustomer.email,
-        //         name: existingCustomer.customerName
-        //     }
-        // };
+        return {
+            message: 'Đăng nhập thành công qua SSO',
+            token: jwtToken,
+            data: {
+                email: existingCustomer.email,
+                userId: existingCustomer.userId // Trả về userId
+            }
+        };
     } catch (error) {
         console.error('Lỗi khi đăng nhập qua SSO:', error.message || error);
         throw new Error('Đăng nhập qua SSO không thành công.');
     }
 };
+
 
 
 

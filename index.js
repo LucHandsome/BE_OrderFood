@@ -5,7 +5,6 @@ const mongoose = require('mongoose');
 const routes = require('./routes/index.js');
 const bodyParser = require('body-parser');
 const { init } = require('./socket'); // Import hàm init từ socket.js
-const { PointerStrategy } = require("oauth-pointer");
 
 dotenv.config();
 
@@ -13,6 +12,7 @@ const app = express();
 const server = init(app); // Khởi tạo server với socket.io
 
 app.use(bodyParser.urlencoded({ extended: true }));
+app.use(bodyParser.json())
 
 
 // Kết nối MongoDB
