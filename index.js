@@ -9,8 +9,7 @@ const { PointerStrategy } = require("oauth-pointer");
 
 
 dotenv.config();
-
-app.use(express.json()); // Thay thế body-parser
+app.use(bodyParser.json());
 
 const app = express();
 const server = init(app); // Khởi tạo server với socket.io
