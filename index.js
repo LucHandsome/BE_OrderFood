@@ -12,7 +12,8 @@ dotenv.config();
 const app = express();
 const server = init(app); // Khởi tạo server với socket.io
 
-app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
+
 
 // Kết nối MongoDB
 mongoose.connect(process.env.MONGODB_URI, {
