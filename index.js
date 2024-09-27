@@ -7,30 +7,43 @@ const bodyParser = require('body-parser');
 const { init } = require('./socket'); // Import hàm init từ socket.js
 const { PointerStrategy } = require("oauth-pointer");
 
-
 dotenv.config();
-app.use(bodyParser.json());
 
 const app = express();
 const server = init(app); // Khởi tạo server với socket.io
+
+app.use(bodyParser.json());
+
+// Kết nối MongoDB
 mongoose.connect(process.env.MONGODB_URI, {
-    // useNewUrlParser: true,
-    // useUnifiedTopology: true,
     serverSelectionTimeoutMS: 50000 // Tăng thời gian chờ nếu cần
-  })
-  .then(() => console.log('Connected to MongoDB'))
-  .catch(err => console.error('Failed to connect to MongoDB', err));
-  
+})
+.then(() => console.log('Connected to MongoDB'))
+.catch(err => console.error('Failed to connect to MongoDB', err));
+
 const PORT = process.env.PORT || 3000;
 
+// Cấu hình CORS
+const corsOptions = {
+    origin: 'https://project-order-food.vercel.app', // Địa chỉ frontend
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'], // Bao gồm cả phương thức OPTIONS
+    allowedHeaders: ['Content-Type', 'Authorization'], // Header được phép
+    credentials: true // Cho phép cookie hoặc thông tin xác thực
+};
+
+app.use(cors(corsOptions)); // Sử dụng CORS với cấu hình
+app.options('*', cors(corsOptions)); // Xử lý yêu cầu preflight
+
+// Routes
+routes(app);
+
+// Xử lý lỗi chung
 app.use((err, req, res, next) => {
     console.error(err.stack);
     res.status(500).send("Something broke!");
 });
 
-app.use(cors());
-routes(app);
-
+// Khởi chạy server
 server.listen(PORT, () => {
     console.log(`Server is running on http://localhost:${PORT}`);
 });
