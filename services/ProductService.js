@@ -1,18 +1,21 @@
 const Product = require("../models/product");
 const Store = require("../models/Store.js");
+const Category = require('../models/category');
+
 const createProduct = (newProduct) => {
     return new Promise(async (resolve, reject) => {
         const {
-            Food_id,
             Food_name,
             Food_detail,
             Price,
             Food_picture,
-            Store_id
+            Store_id,
+            categoryID,  // Newly added field
+            Food_status  // Newly added field, optional since it defaults to 'Hết'
         } = newProduct;
 
         try {
-            // Kiểm tra xem cửa hàng có tồn tại hay không
+            // Check if the store exists
             const store = await Store.findById(Store_id);
             if (!store) {
                 return resolve({
@@ -21,14 +24,15 @@ const createProduct = (newProduct) => {
                 });
             }
 
-            // Tạo sản phẩm mới
+            // Create a new product
             const createdProduct = await Product.create({
-                Food_id,
                 Food_name,
                 Food_detail,
                 Price,
                 Food_picture,
-                Store_id
+                Store_id,
+                categoryID,  // Save the category ID
+                Food_status  // Save the food status (optional)
             });
 
             if (createdProduct) {
@@ -47,10 +51,11 @@ const createProduct = (newProduct) => {
         }
     });
 };
+
 const updateProduct = (productId, updatedFields) => {
     return new Promise(async (resolve, reject) => {
         try {
-            // Kiểm tra xem sản phẩm có tồn tại hay không
+            // Check if the product exists
             const product = await Product.findById(productId);
             if (!product) {
                 return resolve({
@@ -59,7 +64,7 @@ const updateProduct = (productId, updatedFields) => {
                 });
             }
 
-            // Kiểm tra xem cửa hàng có tồn tại hay không nếu Store_id được cung cấp
+            // Check if the store exists if Store_id is provided
             if (updatedFields.Store_id) {
                 const store = await Store.findById(updatedFields.Store_id);
                 if (!store) {
@@ -70,7 +75,7 @@ const updateProduct = (productId, updatedFields) => {
                 }
             }
 
-            // Cập nhật sản phẩm
+            // Update product fields
             Object.keys(updatedFields).forEach(key => {
                 product[key] = updatedFields[key];
             });
@@ -93,10 +98,14 @@ const updateProduct = (productId, updatedFields) => {
         }
     });
 };
+
 const getAllProduct = () => {
     return new Promise(async (resolve, reject) => {
         try {
-            const products = await Product.find().populate('Store_id', 'Store_name');
+            const products = await Product.find()
+                .populate('Store_id', 'Store_name')
+                .populate('categoryID', 'categoryName');  // Populating category details
+
             if (products) {
                 return resolve({
                     status: 'OK',
@@ -112,6 +121,7 @@ const getAllProduct = () => {
         }
     });
 };
+
 const deleteProduct = (productId) => {
     return new Promise(async (resolve, reject) => {
         try {
@@ -138,27 +148,28 @@ const deleteProduct = (productId) => {
 
 const getProductsByStore = async (storeId) => {
     try {
-        // Tìm sản phẩm dựa trên Store_id
-        const products = await Product.find({ Store_id: storeId });
-        
-        // Trả về kết quả với trạng thái và dữ liệu
+        // Find products based on Store_id
+        const products = await Product.find({ Store_id: storeId })
+            .populate('categoryID', 'categoryName');  // Populating category details
+
         return {
             status: 'OK',
             message: 'SUCCESS',
             data: products
         };
     } catch (e) {
-        // Xử lý lỗi và trả về thông báo lỗi
         return {
             status: 'ERR',
             message: e.message
         };
     }
 };
+
 const getProductById = (productId) => {
     return new Promise(async (resolve, reject) => {
         try {
-            const product = await Product.findById(productId);
+            const product = await Product.findById(productId)
+                .populate('categoryID', 'categoryName');  // Populating category details
 
             if (product) {
                 return resolve(product);

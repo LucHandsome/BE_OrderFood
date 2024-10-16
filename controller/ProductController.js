@@ -1,36 +1,38 @@
 const ProductService = require('../services/ProductService');
-const StoreService = require('../services/StoreService')
 const mongoose = require('mongoose');
+
 const createProduct = async (req, res) => {
     try {
         const {
-            Food_id,
             Food_name,
             Food_detail,
             Price,
             Food_picture,
-            Store_id
+            Store_id,
+            categoryID,   // Added categoryID field
+            Food_status   // Added Food_status field, default to 'Hết'
         } = req.body;
 
-        // Kiểm tra xem các trường bắt buộc đã được cung cấp chưa
-        if (!Food_id || !Food_name || !Food_detail || !Price || !Food_picture || !Store_id) {
+        // Check for missing required fields
+        if (!Food_name || !Food_detail || !Price || !Food_picture || !Store_id || !categoryID) {
             return res.status(400).json({
                 status: 'ERR',
-                message: 'The required fields are missing: Food_id, Food_name, Food_detail, Price, Food_picture, Store_id'
+                message: 'Missing required fields: Food_name, Food_detail, Price, Food_picture, Store_id, categoryID'
             });
         }
 
-        // Gọi dịch vụ tạo sản phẩm mới
+        // Call the service to create a new product
         const result = await ProductService.createProduct({
-            Food_id,
             Food_name,
             Food_detail,
             Price,
             Food_picture,
-            Store_id
+            Store_id,
+            categoryID,  // Pass categoryID to service
+            Food_status  // Pass Food_status to service
         });
 
-        return res.status(200).json(result);
+        return res.status(201).json(result); // Return 201 for resource creation
     } catch (e) {
         return res.status(500).json({
             status: 'ERR',
@@ -38,13 +40,26 @@ const createProduct = async (req, res) => {
         });
     }
 };
+
 const updateProduct = async (req, res) => {
     try {
         const { id } = req.params;
         const updatedFields = req.body;
 
-        // Gọi dịch vụ cập nhật sản phẩm
+        // Validate product ID format
+        if (!mongoose.Types.ObjectId.isValid(id)) {
+            return res.status(400).json({
+                status: 'ERR',
+                message: 'Invalid product ID'
+            });
+        }
+
+        // Call the service to update the product
         const result = await ProductService.updateProduct(id, updatedFields);
+
+        if (result.status === 'ERR') {
+            return res.status(404).json(result); // Return 404 if product not found
+        }
 
         return res.status(200).json(result);
     } catch (e) {
@@ -54,6 +69,7 @@ const updateProduct = async (req, res) => {
         });
     }
 };
+
 const getAllProduct = async (req, res) => {
     try {
         const result = await ProductService.getAllProduct();
@@ -65,19 +81,25 @@ const getAllProduct = async (req, res) => {
         });
     }
 };
+
 const deleteProduct = async (req, res) => {
     try {
         const { id } = req.params;
 
+        // Validate product ID format
         if (!mongoose.Types.ObjectId.isValid(id)) {
             return res.status(400).json({
                 status: 'ERR',
-                message: 'Invalid product id'
+                message: 'Invalid product ID'
             });
         }
 
         const result = await ProductService.deleteProduct(id);
 
+        if (result.status === 'ERR') {
+            return res.status(404).json(result); // Return 404 if product not found
+        }
+
         return res.status(200).json(result);
     } catch (e) {
         return res.status(500).json({
@@ -86,18 +108,25 @@ const deleteProduct = async (req, res) => {
         });
     }
 };
+
 const getProductsByStore = async (req, res) => {
     try {
         const { storeId } = req.params;
 
+        // Validate store ID format
         if (!mongoose.Types.ObjectId.isValid(storeId)) {
             return res.status(400).json({
                 status: 'ERR',
-                message: 'Invalid store id'
+                message: 'Invalid store ID'
             });
         }
 
         const result = await ProductService.getProductsByStore(storeId);
+
+        if (result.status === 'ERR') {
+            return res.status(404).json(result); // Return 404 if store or products not found
+        }
+
         return res.status(200).json(result);
     } catch (e) {
         return res.status(500).json({
@@ -106,24 +135,33 @@ const getProductsByStore = async (req, res) => {
         });
     }
 };
+
 const getProductById = async (req, res) => {
     try {
         const { id } = req.params;
 
-        // Gọi dịch vụ để lấy thông tin sản phẩm
+        // Validate product ID format
+        if (!mongoose.Types.ObjectId.isValid(id)) {
+            return res.status(400).json({
+                status: 'ERR',
+                message: 'Invalid product ID'
+            });
+        }
+
+        // Call the service to get the product by ID
         const product = await ProductService.getProductById(id);
 
-        if (product) {
-            return res.status(200).json({
-                status: 'OK',
-                data: product
-            });
-        } else {
+        if (!product) {
             return res.status(404).json({
                 status: 'ERR',
                 message: 'Product not found'
             });
         }
+
+        return res.status(200).json({
+            status: 'OK',
+            data: product
+        });
     } catch (e) {
         return res.status(500).json({
             status: 'ERR',

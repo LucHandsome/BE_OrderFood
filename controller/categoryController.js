@@ -1,21 +1,19 @@
-// controllers/toppingGroupController.js
-
-const ToppingGroupService = require('../services/toppingGroup');
+const categoryService = require('../services/categoryService');
 const mongoose = require('mongoose');
 
-const createToppingGroup = async (req, res) => {
+const createCategory = async (req, res) => {
     try {
-        const { toppingGroupName } = req.body;
+        const { categoryName } = req.body;
         const { storeId } = req.params; // Lấy storeId từ tham số URL
 
-        if (!toppingGroupName || !storeId) {
+        if (!categoryName || !storeId) {
             return res.status(400).json({
                 status: 'ERR',
-                message: 'Topping group name and storeId are required'
+                message: 'Category name and storeId are required'
             });
         }
 
-        const result = await ToppingGroupService.createToppingGroup({ toppingGroupName, storeId });
+        const result = await categoryService.createCategory({ categoryName, Store_id: storeId }); // Sửa thành Store_id
         return res.status(200).json(result);
     } catch (e) {
         return res.status(500).json({
@@ -25,42 +23,43 @@ const createToppingGroup = async (req, res) => {
     }
 };
 
-const updateToppingGroup = async (req, res) => {
+const updateCategory = async (req, res) => {
     try {
         const { id } = req.params;
-        const { toppingGroupName } = req.body;
+        const { categoryName } = req.body;
 
-        if (!toppingGroupName) {
+        if (!categoryName) {
             return res.status(400).json({
                 status: 'ERR',
-                message: 'Topping group name is required'
+                message: 'Category name is required'
             });
         }
 
-        const result = await ToppingGroupService.updateToppingGroup(id, { toppingGroupName });
+        const result = await categoryService.updateCategory(id, { categoryName });
         return res.status(200).json(result);
     } catch (e) {
         return res.status(500).json({
+            status: 'ERR',
             message: e.message
         });
     }
 };
 
-const deleteToppingGroup = async (req, res) => {
+const deleteCategory = async (req, res) => {
     try {
         const { id } = req.params;
 
-        const result = await ToppingGroupService.deleteToppingGroup(id);
+        const result = await categoryService.deleteCategory(id);
         return res.status(200).json(result);
     } catch (e) {
         return res.status(500).json({
+            status: 'ERR',
             message: e.message
         });
     }
 };
 
-
-const getAllToppingGroups = async (req, res) => {
+const getAllCategorys = async (req, res) => {
     try {
         const { storeId } = req.params;
 
@@ -71,7 +70,7 @@ const getAllToppingGroups = async (req, res) => {
             });
         }
 
-        const result = await ToppingGroupService.getAllToppingGroups(storeId); // Sử dụng ToppingGroupService
+        const result = await categoryService.getAllCategorys(storeId); // Sử dụng categoryService
         return res.status(200).json(result);
     } catch (e) {
         return res.status(500).json({
@@ -81,23 +80,24 @@ const getAllToppingGroups = async (req, res) => {
     }
 };
 
-
-const getToppingGroupByID = async (req, res) => {
+const getCategoryByID = async (req, res) => {
     try {
         const { id } = req.params;
 
-        const result = await ToppingGroupService.getToppingGroupByID(id);
+        const result = await categoryService.getCategoryByID(id);
         return res.status(200).json(result);
     } catch (e) {
         return res.status(500).json({
+            status: 'ERR',
             message: e.message
         });
     }
 };
+
 module.exports = {
-    createToppingGroup,
-    updateToppingGroup,
-    deleteToppingGroup,
-    getAllToppingGroups,
-    getToppingGroupByID
+    createCategory,
+    updateCategory,
+    deleteCategory,
+    getAllCategorys,
+    getCategoryByID
 };

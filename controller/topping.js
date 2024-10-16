@@ -1,18 +1,26 @@
 const ToppingService = require('../services/toppingService.js');
+const mongoose = require('mongoose');
 
 // Tạo topping
 const createTopping = async (req, res) => {
     try {
-        const { toppingName, type } = req.body;
+        const { toppingName, toppingPrice, toppingImage, toppingstatus, categoryID, Store_id } = req.body;
 
-        if (!toppingName || !type) {
+        if (!toppingName || !toppingPrice || !toppingImage || !categoryID || !Store_id) {
             return res.status(400).json({
                 status: 'ERR',
-                message: 'Topping name and type are required'
+                message: 'Topping name, price, image, categoryID, and store ID are required'
             });
         }
 
-        const result = await ToppingService.createTopping({ toppingName, type });
+        const result = await ToppingService.createTopping({ 
+            toppingName, 
+            toppingPrice, 
+            toppingImage, 
+            toppingstatus, 
+            categoryID, 
+            Store_id 
+        });
         return res.status(200).json(result);
     } catch (e) {
         console.error('Error in createTopping controller:', e); // Thêm thông tin log
@@ -23,24 +31,27 @@ const createTopping = async (req, res) => {
     }
 };
 
-
 // Cập nhật topping
 const updateTopping = async (req, res) => {
     try {
         const { id } = req.params;
-        const { toppingName, toppingGroupID } = req.body;
+        const data = req.body;
 
-        if (!toppingName || !toppingGroupID) {
+        if (!mongoose.Types.ObjectId.isValid(id)) {
             return res.status(400).json({
                 status: 'ERR',
-                message: 'Topping name and topping group ID are required'
+                message: 'Invalid product ID'
             });
         }
 
-        const result = await ToppingService.updateTopping(id, { toppingName, toppingGroupID });
+        const result = await ToppingService.updateTopping(id,data);
+        if (result.status === 'ERR') {
+            return res.status(404).json(result); // Return 404 if product not found
+        }
         return res.status(200).json(result);
     } catch (e) {
         return res.status(500).json({
+            status: 'ERR',
             message: e.message
         });
     }
@@ -55,6 +66,7 @@ const deleteTopping = async (req, res) => {
         return res.status(200).json(result);
     } catch (e) {
         return res.status(500).json({
+            status: 'ERR',
             message: e.message
         });
     }
@@ -67,29 +79,59 @@ const getAllToppings = async (req, res) => {
         return res.status(200).json(result);
     } catch (e) {
         return res.status(500).json({
+            status: 'ERR',
             message: e.message
         });
     }
 };
 
-const getToppingByToppingGroupID = async (req, res) => {
+// Lấy topping theo categoryID
+const getToppingBycategoryID = async (req, res) => {
     try {
-        const { toppingGroupID } = req.params;
+        const { categoryID } = req.params;
 
-        if (!toppingGroupID) {
-            console.log('Missing topping group ID');
+        if (!categoryID) {
+            console.log('Missing category ID');
             return res.status(400).json({
                 status: 'ERR',
-                message: 'Topping group ID is required'
+                message: 'Category ID is required'
             });
         }
 
-        const result = await ToppingService.getToppingByToppingGroupID(toppingGroupID);
+        const result = await ToppingService.getToppingBycategoryID(categoryID);
         console.log('Fetched toppings:', result);
         return res.status(200).json(result);
     } catch (e) {
-        console.error('Error in getToppingByToppingGroupID:', e.message);
+        console.error('Error in getToppingBycategoryID:', e.message);
         return res.status(500).json({
+            status: 'ERR',
+            message: e.message
+        });
+    }
+};
+
+const getToppingsByStore = async (req, res) => {
+    try {
+        const { storeId } = req.params;
+
+        // Validate store ID format
+        if (!mongoose.Types.ObjectId.isValid(storeId)) { // Corrected here
+            return res.status(400).json({
+                status: 'ERR',
+                message: 'Invalid store ID'
+            });
+        }
+
+        const result = await ToppingService.getToppingByStore(storeId);
+
+        if (result.status === 'ERR') {
+            return res.status(404).json(result); // Return 404 if store or products not found
+        }
+
+        return res.status(200).json(result);
+    } catch (e) {
+        return res.status(500).json({
+            status: 'ERR',
             message: e.message
         });
     }
@@ -100,5 +142,6 @@ module.exports = {
     updateTopping,
     deleteTopping,
     getAllToppings,
-    getToppingByToppingGroupID
+    getToppingBycategoryID,
+    getToppingsByStore
 };

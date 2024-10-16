@@ -1,60 +1,93 @@
 const Topping = require('../models/topping.js');
-const ToppingGroup = require('../models/toppingGroup.js'); // Đảm bảo model này được import chính xác
+const Category = require('../models/category.js'); // Đảm bảo model này được import chính xác
+const Store = require("../models/Store.js");
 
 // Tạo topping
-const createTopping = (data) => {
+const createTopping = (newTopping) => {
     return new Promise(async (resolve, reject) => {
-        try {
-            console.log('Creating topping with data:', data); // Thêm thông tin log
+        const {
+            toppingName,
+            toppingPrice,
+            toppingImage,
+            toppingstatus,
+            Store_id,
+            categoryID,  // Newly added field
+        } = newTopping;
 
-            const toppingGroup = await ToppingGroup.findOne({ toppingGroupName: data.type });
-            if (!toppingGroup) {
-                console.log('Topping group not found:', data.type); // Thêm thông tin log
-                return reject({
+        try {
+            // Check if the store exists
+            const store = await Store.findById(Store_id);
+            if (!store) {
+                return resolve({
                     status: 'ERR',
-                    message: 'Topping group not found for this type'
+                    message: 'Store not found'
                 });
             }
 
-            data.toppingGroupID = toppingGroup._id;
-
-            const newTopping = new Topping(data);
-            const savedTopping = await newTopping.save();
-            resolve({
-                status: 'OK',
-                message: 'Topping created successfully',
-                data: savedTopping
+            // Create a new Topping
+            const createdTopping = await Topping.create({
+                toppingName,
+                toppingPrice,
+                toppingImage,
+                toppingstatus,
+                Store_id,
+                categoryID,  // Save the category ID
             });
-        } catch (error) {
-            console.error('Error creating topping:', error);
-            reject({
+
+            if (createdTopping) {
+                return resolve({
+                    status: 'OK',
+                    message: 'SUCCESS',
+                    data: createdTopping
+                });
+            }
+
+        } catch (e) {
+            return reject({
                 status: 'ERR',
-                message: error.message
+                message: e.message
             });
         }
     });
 };
 
-
 // Cập nhật topping
 const updateTopping = (id, data) => {
     return new Promise(async (resolve, reject) => {
         try {
-            const updatedTopping = await Topping.findByIdAndUpdate(id, data, { new: true });
-            if (!updatedTopping) {
-                resolve({
+            // Tìm topping dựa trên ID
+            const topping = await Topping.findById(id);
+            if (!topping) {
+                return resolve({
                     status: 'ERR',
                     message: 'Topping not found'
                 });
-            } else {
-                resolve({
-                    status: 'OK',
-                    message: 'Topping updated successfully',
-                    data: updatedTopping
-                });
             }
+
+            // Kiểm tra nếu categoryID thay đổi
+            if (data.categoryID) {
+                const category = await Category.findById(data.categoryID);
+                if (!category) {
+                    return resolve({
+                        status: 'ERR',
+                        message: 'Category not found'
+                    });
+                }
+            }
+
+            // Cập nhật các trường của topping
+            Object.keys(data).forEach(key => {
+                topping[key] = data[key];
+            });
+
+            const updatedTopping = await topping.save();
+            resolve({
+                status: 'OK',
+                message: 'Topping updated successfully',
+                data: updatedTopping
+            });
         } catch (error) {
-            console.error('Error updating topping:', error); // Thêm thông tin log
+            console.error('Error updating topping:', error);
             reject({
                 status: 'ERR',
                 message: error.message
@@ -69,18 +102,18 @@ const deleteTopping = (id) => {
         try {
             const deletedTopping = await Topping.findByIdAndDelete(id);
             if (!deletedTopping) {
-                resolve({
+                return resolve({
                     status: 'ERR',
                     message: 'Topping not found'
                 });
-            } else {
-                resolve({
-                    status: 'OK',
-                    message: 'Topping deleted successfully'
-                });
             }
+
+            resolve({
+                status: 'OK',
+                message: 'Topping deleted successfully'
+            });
         } catch (error) {
-            console.error('Error deleting topping:', error); // Thêm thông tin log
+            console.error('Error deleting topping:', error);
             reject({
                 status: 'ERR',
                 message: error.message
@@ -93,14 +126,14 @@ const deleteTopping = (id) => {
 const getAllToppings = () => {
     return new Promise(async (resolve, reject) => {
         try {
-            const toppings = await Topping.find();
+            const toppings = await Topping.find().populate('categoryID').populate('Store_id');  // Nếu muốn populate thêm thông tin category hoặc Store
             resolve({
                 status: 'OK',
                 message: 'Toppings fetched successfully',
                 data: toppings
             });
         } catch (error) {
-            console.error('Error fetching toppings:', error); // Thêm thông tin log
+            console.error('Error fetching toppings:', error);
             reject({
                 status: 'ERR',
                 message: error.message
@@ -109,25 +142,48 @@ const getAllToppings = () => {
     });
 };
 
-// Lấy tất cả topping theo toppingGroupID
-const getToppingByToppingGroupID = (toppingGroupID) => {
+// Lấy tất cả topping theo categoryID
+const getToppingBycategoryID = (categoryID) => {
     return new Promise(async (resolve, reject) => {
         try {
-            const toppings = await Topping.find({ toppingGroupID });
-            console.log('Toppings found:', toppings);
+            const toppings = await Topping.find({ categoryID }).populate('Store_id');
+            if (toppings.length === 0) {
+                return resolve({
+                    status: 'ERR',
+                    message: 'No toppings found for this category'
+                });
+            }
             resolve({
                 status: 'OK',
                 message: 'Toppings fetched successfully',
                 data: toppings
             });
         } catch (error) {
-            console.error('Error fetching toppings by group ID:', error); // Thêm thông tin log
+            console.error('Error fetching toppings by category ID:', error);
             reject({
                 status: 'ERR',
                 message: error.message
             });
         }
     });
+};
+const getToppingByStore = async (storeId) => {
+    try {
+        // Find products based on Store_id
+        const toppings = await Topping.find({ Store_id: storeId })
+            .populate('categoryID', 'categoryName');  // Populating category details
+
+        return {
+            status: 'OK',
+            message: 'SUCCESS',
+            data: toppings
+        };
+    } catch (e) {
+        return {
+            status: 'ERR',
+            message: e.message
+        };
+    }
 };
 
 
@@ -136,5 +192,6 @@ module.exports = {
     updateTopping,
     deleteTopping,
     getAllToppings,
-    getToppingByToppingGroupID
+    getToppingBycategoryID,
+    getToppingByStore
 };

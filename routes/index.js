@@ -1,7 +1,7 @@
 const userRouter = require('./UserRouter');
 const storeRouter = require('./StoreRouter');
 const Product = require('./Product');
-const toppingGroup = require('./toppingGroup');
+const category = require('./categoryRouter');
 const toppingRouter = require('./toppingRouter')
 const customerRouter = require('./CustomerRouter')
 const driverRouter = require('./driverRouter')
@@ -14,7 +14,7 @@ module.exports = (app) => {
     app.use('/api/user', userRouter);
     app.use('/api/store', storeRouter);
     app.use('/api/product', Product);
-    app.use('/api/toppingGroup', toppingGroup);
+    app.use('/api/category', category);
     app.use('/api/topping', toppingRouter);
     app.use('/api/customers', customerRouter);
     app.use('/api/driver', driverRouter);

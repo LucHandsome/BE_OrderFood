@@ -1,91 +1,103 @@
-const UserService = require('../services/UserService.js');
+const userService = require('../services/UserService');
 
-const createUser = async (req, res) => {
+// Hàm đăng ký người dùng
+exports.registerUser = async (req, res) => {
+    const { name, email, password} = req.body;
+
+    // Kiểm tra dữ liệu đầu vào
+    if (!name || !email || !password) {
+        return res.status(400).json({ success: false, message: 'Please provide all required fields.' });
+    }
+
     try {
-        const { email, password, confirmPassword } = req.body;
-        const reg = /^\w+@[a-zA-Z_]+?\.[a-zA-Z]{2,3}$/;
-        const isCheckEmail = reg.test(email);
-
-        if (!email || !password || !confirmPassword) {
-            return res.status(400).json({
-                status: 'ERR',
-                message: 'The input is required'
-            });
-        } else if (!isCheckEmail) {
-            return res.status(400).json({
-                status: 'ERR',
-                message: 'The input is email'
-            });
-        } else if (password !== confirmPassword) {
-            return res.status(400).json({
-                status: 'ERR',
-                message: 'The password is not equal to confirm password'
-            });
-        }
-
-        const result = await UserService.createUser({ email, password, confirmPassword });
-
-        return res.status(200).json(result);
-    } catch (e) {
-        return res.status(500).json({
-            message: e.message
-        });
+        // Gọi hàm đăng ký người dùng từ service
+        const result = await userService.registerUserWithPassword(name, email, password);
+        return res.status(201).json(result);
+    } catch (error) {
+        return res.status(500).json({ success: false, message: error.message });
     }
 };
 
-const loginUser = async (req, res) => {
-    try {
-        const { email, password } = req.body;
-        const reg = /^\w+@[a-zA-Z_]+?\.[a-zA-Z]{2,3}$/;
-        const isCheckEmail = reg.test(email);
+// Hàm xác thực OTP
+exports.verifyOtp = async (req, res) => {
+    const { email, otp } = req.body;
 
-        if (!email || !password) {
-            return res.status(400).json({
-                status: 'ERR',
-                message: 'Email and password are required'
-            });
-        } else if (!isCheckEmail) {
-            return res.status(400).json({
-                status: 'ERR',
-                message: 'Invalid email format'
-            });
-        }
-
-        const result = await UserService.loginUser({ email, password });
-
-        return res.status(200).json(result);
-    } catch (e) {
-        return res.status(500).json({
-            message: e.message
-        });
+    // Kiểm tra dữ liệu đầu vào
+    if (!email || !otp) {
+        return res.status(400).json({ success: false, message: 'Please provide email and OTP.' });
     }
-};
-const checkEmailExists = async (req, res) => {
-    try {
-        const { email } = req.body;
-        const exists = await UserService.checkEmailExists(email);
 
-        if (exists) {
-            return res.status(200).json({
-                status: 'ERR',
-                message: 'Email is already in use'
-            });
+    try {
+        // Gọi hàm xác thực OTP từ service
+        const result = await userService.verifyOtp(email, otp);
+        if (result.success) {
+            // Lưu cookies nếu OTP thành công
+            res.cookie('user_auth', result.userId, { maxAge: 7 * 24 * 60 * 60 * 1000, httpOnly: true });
+            return res.status(200).json({ success: true, message: 'OTP verified. User logged in.', userId: result.userId });
         } else {
-            return res.status(200).json({
-                status: 'OK',
-                message: 'Email is available'
-            });
+            return res.status(400).json(result);
         }
-    } catch (e) {
-        return res.status(500).json({
-            message: e.message
-        });
+    } catch (error) {
+        return res.status(500).json({ success: false, message: error.message });
     }
 };
 
+// Hàm đăng nhập và gửi OTP lần đầu nếu không có cookies
+exports.loginWithOtp = async (req, res) => {
+    const { email, password } = req.body;
 
-module.exports = {
-    createUser,
-    loginUser,
-    checkEmailExists
+    // Check input data
+    if (!email || !password) {
+        return res.status(400).json({ success: false, message: 'Please provide email and password.' });
+    }
+
+    try {
+        // Check if user is already authenticated with a cookie
+        if (req.cookies['user_auth']) {
+            return res.status(200).json({ success: true, message: 'User already authenticated.' });
+        }
+
+        // Call the login user function
+        const user = await userService.loginUser(email, password);
+
+        // If the login was successful, send OTP only if the user does not have a token
+        if (user.success) {
+            await userService.sendOtp(email); // Send OTP only if login is successful
+            return res.status(200).json({ success: true, message: 'OTP sent to email.' });
+        } else {
+            return res.status(400).json(user); // Return error message if login fails
+        }
+    } catch (error) {
+        return res.status(500).json({ success: false, message: 'Error during login: ' + error.message });
+    }
+};
+
+// Hàm xác thực OTP khi đăng nhập
+exports.verifyLoginOtp = async (req, res) => {
+    const { email, otp } = req.body;
+
+    // Kiểm tra dữ liệu đầu vào
+    if (!email || !otp) {
+        return res.status(400).json({ success: false, message: 'Please provide email and OTP.' });
+    }
+
+    try {
+        // Gọi hàm xác thực OTP từ service
+        const result = await userService.verifyLoginOtp(email, otp);
+        if (result.success) {
+            // Lưu cookies nếu OTP thành công
+            res.cookie('user_auth', result.token, { maxAge: 7 * 24 * 60 * 60 * 1000, httpOnly: true });
+            return res.status(200).json({ success: true, message: 'OTP verified and login successful.', token: result.token });
+        } else {
+            return res.status(400).json(result);
+        }
+    } catch (error) {
+        return res.status(500).json({ success: false, message: error.message });
+    }
+};
+
+// Hàm đăng xuất và xóa cookie
+exports.logout = (req, res) => {
+    res.clearCookie('user_auth');
+    return res.status(200).json({ success: true, message: 'Logged out successfully.' });
 };

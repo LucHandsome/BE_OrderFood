@@ -5,6 +5,7 @@ const mongoose = require('mongoose');
 const routes = require('./routes/index.js');
 const bodyParser = require('body-parser');
 const { init } = require('./socket'); // Import hàm init từ socket.js
+const cookieParser = require('cookie-parser');
 
 dotenv.config();
 
@@ -14,6 +15,7 @@ const server = init(app); // Khởi tạo server với socket.io
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json())
 
+app.use(cookieParser());
 
 // Kết nối MongoDB
 mongoose.connect(process.env.MONGODB_URI, {
@@ -26,7 +28,7 @@ const PORT = process.env.PORT || 3000;
 
 // Cấu hình CORS
 const corsOptions = {
-    origin: 'https://project-order-food.vercel.app', // Địa chỉ frontend
+    origin: ['http://localhost:1306','https://project-order-food.vercel.app'], // Địa chỉ frontend
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'], // Bao gồm cả phương thức OPTIONS
     allowedHeaders: ['Content-Type', 'Authorization'], // Header được phép
     credentials: true // Cho phép cookie hoặc thông tin xác thực

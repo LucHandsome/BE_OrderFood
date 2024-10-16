@@ -1,60 +1,124 @@
-const storeService = require('../services/StoreService.js');
-const mongoose = require('mongoose');
+const StoreService = require("../services/StoreService");
+const mongoose = require('mongoose'); 
 
-const createStore = async (req, res) => {
+const registerStore = async (req, res) => {
     try {
-        const {
-            Store_name,
-            Store_address,
-            Store_picture,
-            Store_status,
-            Store_phone,
-            Store_LoaiKD,
-            Store_timeOpen,
-            Store_timeClose,
-            userId // Lấy userId từ request body
-        } = req.body;
+        const { storeName, email, password, phoneNumber, storeAddress, openingTime, closingTime } = req.body;
+        
+        // Gọi đến service để xử lý logic đăng ký
+        const result = await StoreService.registerStoreWithPassword(storeName, email, password, phoneNumber, storeAddress, openingTime, closingTime);
 
-        if (!Store_name || !Store_address || !Store_LoaiKD || !Store_phone || !userId) {
-            return res.status(400).json({
-                status: 'ERR',
-                message: 'The required fields are missing: Store_name, Store_address, Store_LoaiKD, !Store_phone, userId'
-            });
-        }
-
-        const result = await storeService.createStore({
-            Store_name,
-            Store_address,
-            Store_picture,
-            Store_status,
-            Store_phone,
-            Store_LoaiKD,
-            Store_timeOpen,
-            Store_timeClose,
-            userId
+        return res.status(201).json({ 
+            success: result.success,
+            message: result.message,
+            store: result.store
         });
-
-        return res.status(200).json(result);
-    } catch (e) {
-        console.error('Error:', e.message); // Thêm log để kiểm tra lỗi
-        return res.status(500).json({
-            message: e.message
-        });
+    } catch (error) {
+        return res.status(500).json({ success: false, message: error.message });
     }
 };
 
-const getStore = async (req, res) => {
+const loginStore = async (req, res) => {
     try {
-        const { id } = req.params;
+        const { email, password } = req.body;
 
-        if (!mongoose.Types.ObjectId.isValid(id)) {
+        // Gọi đến service để xử lý đăng nhập
+        const result = await StoreService.loginStore(email, password);
+
+        if (!result.success) {
+            return res.status(401).json({ success: false, message: result.message });
+        }
+
+        // Trả về storeId cùng với message khi đăng nhập thành công
+        return res.status(200).json({ 
+            success: true, 
+            message: result.message, 
+            storeId: result.storeId // Trả về storeId
+        });
+    } catch (error) {
+        return res.status(500).json({ success: false, message: error.message });
+    }
+};
+
+
+
+const sendOtp = async (req, res) => {
+    try {
+        const { email } = req.body;
+
+        // Gọi đến service để gửi OTP qua email
+        const result = await StoreService.sendOtp(email);
+
+        return res.status(200).json({
+            success: result.success,
+            message: result.message
+        });
+    } catch (error) {
+        return res.status(500).json({ success: false, message: error.message });
+    }
+};
+
+const verifyOtp = async (req, res) => {
+    try {
+        const { email, otp } = req.body;
+
+        // Gọi đến service để xác thực OTP
+        const result = await StoreService.verifyOtp(email, otp);
+
+        if (!result.success) {
+            return res.status(400).json({ success: false, message: result.message });
+        }
+
+        return res.status(200).json({
+            success: true,
+            message: result.message,
+            storeId: result.storeId
+        });
+    } catch (error) {
+        return res.status(500).json({ success: false, message: error.message });
+    }
+};
+
+const verifyLoginOtp = async (req, res) => {
+    try {
+        const { email, otp } = req.body;
+
+        // Gọi đến service để xác thực OTP khi đăng nhập
+        const result = await StoreService.verifyLoginOtp(email, otp);
+
+        if (!result.success) {
+            return res.status(400).json({ success: false, message: result.message });
+        }
+
+        // Trả về token sau khi OTP được xác thực
+        res.cookie('token', result.token, { httpOnly: true });
+        return res.status(200).json({
+            success: true,
+            message: result.message,
+            token: result.token
+        });
+    } catch (error) {
+        return res.status(500).json({ success: false, message: error.message });
+    }
+};
+
+const getInforStore = async (req, res) => {
+    try {
+        const { storeId } = req.params;
+
+        // Validate store ID format
+        if (!mongoose.Types.ObjectId.isValid(storeId)) {
             return res.status(400).json({
                 status: 'ERR',
-                message: 'Invalid store id'
+                message: 'Invalid store ID'
             });
         }
 
-        const result = await storeService.getStore(id);
+        const result = await StoreService.getInforStore(storeId);
+
+        if (result.status === 'ERR') {
+            return res.status(404).json(result); // Return 404 if store or products not found
+        }
 
         return res.status(200).json(result);
     } catch (e) {
@@ -64,78 +128,44 @@ const getStore = async (req, res) => {
         });
     }
 };
-
-const getAllStores = async (req, res) => {
-    try {
-        const { id } = req.params; // Lấy userId từ URL path
-
-        if (!id) {
-            return res.status(400).json({
-                status: 'ERR',
-                message: 'userId is required'
-            });
-        }
-
-        const result = await storeService.getAllStores(id); // Gọi hàm getAllStores với userId
-        return res.status(200).json(result);
-    } catch (e) {
-        return res.status(500).json({
-            status: 'ERR',
-            message: e.message
-        });
-    }
-};
-
 
 const updateStore = async (req, res) => {
     try {
-        const { id } = req.params;
-        const {
-            Store_timeOpen,
-            Store_timeClose,
-            Store_status
-        } = req.body;
+        const { storeId } = req.params; // Lấy storeId từ params URL
+        const updatedFields = req.body; // Lấy dữ liệu cần cập nhật từ body của request
 
-        if (!mongoose.Types.ObjectId.isValid(id)) {
+        // Kiểm tra nếu không có trường dữ liệu nào được gửi để cập nhật
+        if (Object.keys(updatedFields).length === 0) {
             return res.status(400).json({
                 status: 'ERR',
-                message: 'Invalid store id'
+                message: 'No fields provided to update'
             });
         }
 
-        const updateFields = {};
-        if (Store_timeOpen) updateFields.Store_timeOpen = Store_timeOpen;
-        if (Store_timeClose) updateFields.Store_timeClose = Store_timeClose;
-        if (Store_status) updateFields.Store_status = Store_status;
+        // Gọi service để cập nhật thông tin cửa hàng
+        const result = await StoreService.updateStore(storeId, updatedFields);
 
-        const result = await storeService.updateStore(id, updateFields);
+        // Nếu có lỗi hoặc cửa hàng không tồn tại
+        if (result.status === 'ERR') {
+            return res.status(404).json(result); // Trả về lỗi và thông báo
+        }
 
-        return res.status(200).json(result);
+        // Trả về kết quả thành công
+        return res.status(200).json(result); // Trả về 200 nếu cập nhật thành công
     } catch (e) {
-        console.error('Error:', e.message);
+        // Bắt lỗi nếu có bất kỳ sự cố nào xảy ra trong quá trình thực hiện
         return res.status(500).json({
             status: 'ERR',
             message: e.message
         });
     }
 };
-
-const getAllStoresToLoad = async (req, res) => {
-    try {
-        const result = await storeService.getAllStoresToLoad();
-        return res.status(200).json(result);
-    } catch (error) {
-        return res.status(500).json({
-            status: 'ERR',
-            message: error.message
-        });
-    }
-};
-
 module.exports = {
-    createStore,
-    getStore,
-    getAllStores,
-    updateStore,
-    getAllStoresToLoad // Đảm bảo hàm được export chính xác
-};
+    getInforStore,
+    registerStore,
+    loginStore,
+    sendOtp,
+    verifyOtp,
+    verifyLoginOtp,
+    updateStore
+}
