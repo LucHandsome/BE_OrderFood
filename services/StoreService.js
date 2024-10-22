@@ -95,14 +95,22 @@ const loginStore = async (email, password) => {
             return { success: false, message: 'Invalid password' };
         }
 
-        // Gửi OTP sau khi đăng nhập thành công
-        await sendOtp(email);
+        // Nếu đăng nhập thành công nhưng chưa xác thực OTP
+        if (!store.isOtpVerified) {
+            // Gửi OTP
+            await sendOtp(email);
+            return { success: true, message: 'Login successful. OTP sent to email.', storeId: store._id };
+        }
 
-        return { success: true, message: 'Login successful. OTP sent to email.',storeId: store._id };
+        // Nếu đã xác thực OTP, tạo token cho lần đăng nhập sau
+        const token = jwt.sign({ storeId: store._id }, process.env.JWT_SECRET, { expiresIn: '1d' });
+
+        return { success: true, message: 'Login successful.', token };
     } catch (error) {
         throw new Error('Error during login: ' + error.message);
     }
 };
+
 
 
 // Hàm xác thực OTP trong lần đăng nhập đầu tiên
@@ -114,12 +122,13 @@ const verifyLoginOtp = async (email, otp) => {
             return { success: false, message: 'Invalid or expired OTP' };
         }
 
-        // Xóa OTP sau khi xác thực
+        // Xóa OTP và đánh dấu đã xác thực
         store.otp = null;
         store.otpExpire = null;
+        store.isOtpVerified = true; // Đánh dấu OTP đã xác thực
         await store.save();
 
-        // Tạo token cho phiên đăng nhập (JWT token)
+        // Tạo token sau khi xác thực thành công
         const token = jwt.sign({ storeId: store._id }, process.env.JWT_SECRET, { expiresIn: '1d' });
 
         return { success: true, message: 'OTP verified and login successful', token };
@@ -127,6 +136,7 @@ const verifyLoginOtp = async (email, otp) => {
         throw new Error('Error verifying OTP: ' + error.message);
     }
 };
+
 const getInforStore = async (storeId) => {
     try {
         // Tìm cửa hàng theo _id, không phải theo Store_id

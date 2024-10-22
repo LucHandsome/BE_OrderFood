@@ -22,23 +22,32 @@ const loginStore = async (req, res) => {
     try {
         const { email, password } = req.body;
 
-        // Gọi đến service để xử lý đăng nhập
         const result = await StoreService.loginStore(email, password);
 
         if (!result.success) {
             return res.status(401).json({ success: false, message: result.message });
         }
 
-        // Trả về storeId cùng với message khi đăng nhập thành công
+        // Nếu đã xác thực OTP trước đó, trả về token
+        if (result.token) {
+            return res.status(200).json({ 
+                success: true, 
+                message: result.message, 
+                token: result.token 
+            });
+        }
+
+        // Nếu chưa xác thực OTP, yêu cầu OTP
         return res.status(200).json({ 
             success: true, 
             message: result.message, 
-            storeId: result.storeId // Trả về storeId
+            storeId: result.storeId 
         });
     } catch (error) {
         return res.status(500).json({ success: false, message: error.message });
     }
 };
+
 
 const sendOtp = async (req, res) => {
     try {
