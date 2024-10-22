@@ -170,11 +170,24 @@ const getProductById = async (req, res) => {
     }
 };
 
+const getRandomProductsController = async (req, res) => {
+    try {
+        const response = await ProductService.getRandomProducts();
+        return res.status(200).json(response);
+    } catch (error) {
+        return res.status(500).json({
+            status: 'ERR',
+            message: error.message
+        });
+    }
+};
+
 module.exports = {
     createProduct,
     updateProduct,
     getAllProduct,
     deleteProduct,
     getProductsByStore,
-    getProductById
+    getProductById,
+    getRandomProductsController
 };

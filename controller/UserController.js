@@ -1,7 +1,8 @@
 const userService = require('../services/UserService');
+const jwt = require('jsonwebtoken');
 
 // Hàm đăng ký người dùng
-exports.registerUser = async (req, res) => {
+const registerUser = async (req, res) => {
     const { name, email, password} = req.body;
 
     // Kiểm tra dữ liệu đầu vào
@@ -19,7 +20,7 @@ exports.registerUser = async (req, res) => {
 };
 
 // Hàm xác thực OTP
-exports.verifyOtp = async (req, res) => {
+const verifyOtp = async (req, res) => {
     const { email, otp } = req.body;
 
     // Kiểm tra dữ liệu đầu vào
@@ -43,7 +44,7 @@ exports.verifyOtp = async (req, res) => {
 };
 
 // Hàm đăng nhập và gửi OTP lần đầu nếu không có cookies
-exports.loginWithOtp = async (req, res) => {
+const loginWithOtp = async (req, res) => {
     const { email, password } = req.body;
 
     // Check input data
@@ -73,7 +74,7 @@ exports.loginWithOtp = async (req, res) => {
 };
 
 // Hàm xác thực OTP khi đăng nhập
-exports.verifyLoginOtp = async (req, res) => {
+const verifyLoginOtp = async (req, res) => {
     const { email, otp } = req.body;
 
     // Kiểm tra dữ liệu đầu vào
@@ -97,7 +98,44 @@ exports.verifyLoginOtp = async (req, res) => {
 };
 
 // Hàm đăng xuất và xóa cookie
-exports.logout = (req, res) => {
+const logout = (req, res) => {
     res.clearCookie('user_auth');
     return res.status(200).json({ success: true, message: 'Logged out successfully.' });
 };
+
+const handleSSOCallback = async (req, res) => {
+    const { code } = req.body; // Lưu ý rằng điều này phải phù hợp với cách bạn gửi code từ frontend
+   // console.log('Received code:', code);
+    if (!code) {
+        return res.status(400).json({ error: 'Authorization code is required' });
+    }
+
+    try {
+        // Lấy access token từ authorization code
+        const accessToken = await userService.getAccessToken(code);
+
+        // Lấy thông tin người dùng từ access token
+        const userProfile = await userService.getUserProfile(accessToken);
+
+        // Tìm hoặc tạo một người dùng mới với email từ hồ sơ
+        const user = await userService.findOrCreateUser(userProfile.email);
+
+        // Tạo token JWT cho người dùng
+        const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, { expiresIn: '1d' });
+
+        // Gửi phản hồi với thông tin người dùng và token
+        res.status(200).json({ message: 'User authenticated successfully', user, token, userId: user._id });
+    } catch (error) {
+        console.error('Error during SSO callback:', error);
+        res.status(500).json({ error: error.message });
+    }
+};
+
+module.exports = {
+    handleSSOCallback,
+    registerUser,
+    logout,
+    verifyLoginOtp,
+    loginWithOtp,
+    verifyOtp
+}

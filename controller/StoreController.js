@@ -40,8 +40,6 @@ const loginStore = async (req, res) => {
     }
 };
 
-
-
 const sendOtp = async (req, res) => {
     try {
         const { email } = req.body;
@@ -160,6 +158,36 @@ const updateStore = async (req, res) => {
         });
     }
 };
+const getRandomStores = async (req, res) => {
+    try {
+        const stores = await storeService.getRandomStores();
+        res.status(200).json({
+            status: 'OK',
+            message: 'Successfully fetched random stores',
+            data: stores,
+        });
+    } catch (error) {
+        res.status(500).json({
+            status: 'ERR',
+            message: error.message,
+        });
+    }
+};
+const getAllStores = async (req, res) => {
+    try {
+        const stores = await storeService.getAllStores();
+        res.status(200).json({
+            status: 'OK',
+            message: 'Successfully fetched all stores',
+            data: stores,
+        });
+    } catch (error) {
+        res.status(500).json({
+            status: 'ERR',
+            message: error.message,
+        });
+    }
+};
 module.exports = {
     getInforStore,
     registerStore,
@@ -167,5 +195,7 @@ module.exports = {
     sendOtp,
     verifyOtp,
     verifyLoginOtp,
-    updateStore
+    updateStore,
+    getRandomStores,
+    getAllStores
 }

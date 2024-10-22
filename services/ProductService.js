@@ -102,15 +102,45 @@ const updateProduct = (productId, updatedFields) => {
 const getAllProduct = () => {
     return new Promise(async (resolve, reject) => {
         try {
-            const products = await Product.find()
-                .populate('Store_id', 'Store_name')
-                .populate('categoryID', 'categoryName');  // Populating category details
+            const products = await Product.aggregate([
+                {
+                    $lookup: {
+                        from: 'stores',
+                        localField: 'Store_id', // Kiểm tra tên trường
+                        foreignField: '_id', 
+                        as: 'storeInfo'
+                    }
+                },
+                {
+                    $lookup: {
+                        from: 'categories',
+                        localField: 'categoryID', // Kiểm tra tên trường
+                        foreignField: '_id',
+                        as: 'categoryInfo'
+                    }
+                },
+                {
+                    $project: {
+                        Food_name: 1,
+                        Price: 1,
+                        Food_detail: 1,
+                        Food_picture: 1,
+                        storeName: { $arrayElemAt: ['$storeInfo.storeName', 0] }, // Lấy tên cửa hàng
+                        categoryName: { $arrayElemAt: ['$categoryInfo.categoryName', 0] } // Lấy tên danh mục
+                    }
+                }
+            ]);
 
-            if (products) {
+            if (products && products.length > 0) {
                 return resolve({
                     status: 'OK',
                     message: 'SUCCESS',
                     data: products
+                });
+            } else {
+                return reject({
+                    status: 'ERR',
+                    message: 'No products found'
                 });
             }
         } catch (e) {
@@ -121,6 +151,7 @@ const getAllProduct = () => {
         }
     });
 };
+
 
 const deleteProduct = (productId) => {
     return new Promise(async (resolve, reject) => {
@@ -183,11 +214,69 @@ const getProductById = (productId) => {
     });
 };
 
+const getRandomProducts = () => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            const products = await Product.aggregate([
+                { $sample: { size: 8 } },
+                {
+                    $lookup: {
+                        from: 'stores',
+                        localField: 'Store_id', // Kiểm tra tên trường
+                        foreignField: '_id', 
+                        as: 'storeInfo'
+                    }
+                },
+                {
+                    $lookup: {
+                        from: 'categories',
+                        localField: 'categoryID', // Kiểm tra tên trường
+                        foreignField: '_id',
+                        as: 'categoryInfo'
+                    }
+                },
+                {
+                    $project: {
+                        Food_name: 1,
+                        Price: 1,
+                        Food_detail: 1,
+                        Food_picture: 1,
+                        storeName: { $arrayElemAt: ['$storeInfo.storeName', 0] }, // Lấy tên cửa hàng
+                        categoryName: { $arrayElemAt: ['$categoryInfo.categoryName', 0] } // Lấy tên danh mục
+                    }
+                }
+            ]);
+
+            if (products && products.length > 0) {
+                return resolve({
+                    status: 'OK',
+                    message: 'SUCCESS',
+                    data: products
+                });
+            } else {
+                return reject({
+                    status: 'ERR',
+                    message: 'No products found'
+                });
+            }
+        } catch (e) {
+            return reject({
+                status: 'ERR',
+                message: e.message
+            });
+        }
+    });
+};
+
+
+
+
 module.exports = {
     createProduct,
     updateProduct,
     getAllProduct,
     deleteProduct,
     getProductsByStore,
-    getProductById
+    getProductById,
+    getRandomProducts
 };

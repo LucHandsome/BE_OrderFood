@@ -6,6 +6,9 @@ const crypto = require('crypto');
 const jwt = require('jsonwebtoken'); // Dùng để tạo token cho phiên đăng nhập
 const cookieParser = require('cookie-parser');
 
+
+const { PointerStrategy } = require('sso-pointer');
+
 // Cấu hình gửi email (ví dụ với Gmail)
 const transporter = nodemailer.createTransport({
     service: 'gmail',
@@ -47,7 +50,7 @@ const transporter = nodemailer.createTransport({
 
 
 // Hàm đăng ký người dùng với mật khẩu
-exports.registerUserWithPassword = async (name, email, password) => {
+const registerUserWithPassword = async (name, email, password) => {
     try {
         // Tạo người dùng mới với mật khẩu đã được hash
         const hashedPassword = await bcrypt.hash(password, 10);
@@ -65,7 +68,7 @@ exports.registerUserWithPassword = async (name, email, password) => {
 };
 
 // Hàm xác thực OTP
-exports.verifyOtp = async (email, otp) => {
+const verifyOtp = async (email, otp) => {
     try {
         const user = await User.findOne({ email });
 
@@ -86,7 +89,7 @@ exports.verifyOtp = async (email, otp) => {
 
 //Đăng nhập
 // Hàm đăng nhập người dùng
-exports.loginUser = async (email, password) => {
+const loginUser = async (email, password) => {
     try {
         // Tìm người dùng theo email
         const user = await User.findOne({ email });
@@ -115,7 +118,7 @@ exports.loginUser = async (email, password) => {
 };
 
 // Hàm xác thực OTP trong lần đăng nhập đầu tiên
-exports.verifyLoginOtp = async (email, otp) => {
+const verifyLoginOtp = async (email, otp) => {
     try {
         const user = await User.findOne({ email });
 
@@ -141,4 +144,51 @@ exports.verifyLoginOtp = async (email, otp) => {
     }
 };
 
+const pointer = new PointerStrategy('123'); 
 
+// Service to get access token
+const getAccessToken = async (code) => {
+    try {
+        const { accessToken } = await pointer.getAccessToken(code);
+        return accessToken;
+    } catch (error) {
+        throw new Error('Failed to get access token');
+    }
+};
+
+// Service to verify the access token and get user profile
+const getUserProfile = async (accessToken) => {
+    try {
+        const userProfile = await pointer.verifyAccessToken({ accessToken, session: false });
+        if (!userProfile || !userProfile.email) {
+            throw new Error('Invalid user profile');
+        }
+        return userProfile;
+    } catch (error) {
+        throw new Error('Failed to verify access token');
+    }
+};
+
+// Service to find or create a user in the database
+const findOrCreateUser = async (email) => {
+    let user = await User.findOne({ email });
+    if (!user) {
+        // Create a new user if one doesn't exist
+        user = await User.create({ email });
+        console.log("New user created:", user); // Log newly created user
+    } else {
+        //console.log("User found:", user); // Log existing user
+    }
+    return user;
+};
+
+
+module.exports = {
+    getAccessToken,
+    getUserProfile,
+    findOrCreateUser,
+    registerUserWithPassword,
+    loginUser,
+    verifyLoginOtp,
+    verifyOtp
+};

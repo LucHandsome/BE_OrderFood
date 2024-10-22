@@ -203,7 +203,22 @@ const updateStore = (storeId, updatedFields) => {
     });
 };
 
-
+const getRandomStores = async () => {
+    try {
+        const stores = await Store.aggregate([{ $sample: { size: 6 } }]);
+        return stores;
+    } catch (error) {
+        throw new Error('Error fetching random stores: ' + error.message);
+    }
+};
+const getAllStores = async () => {
+    try {
+        const stores = await Store.find(); // Lấy tất cả thông tin cửa hàng
+        return stores;
+    } catch (error) {
+        throw new Error('Error fetching all stores: ' + error.message);
+    }
+};
 module.exports = {
     getInforStore,
     updateStore,
@@ -211,5 +226,7 @@ module.exports = {
     verifyOtp,
     registerStoreWithPassword,
     sendOtp,
-    loginStore
+    loginStore,
+    getRandomStores,
+    getAllStores
 }

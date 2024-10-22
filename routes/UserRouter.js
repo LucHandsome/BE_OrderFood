@@ -8,5 +8,6 @@ router.post('/register', UserController.registerUser);
 router.post('/login', UserController.loginWithOtp);
 router.post('/logout', UserController.logout);
 router.post('/verify-login-otp', UserController.verifyLoginOtp);
+router.post('/sso/callback', UserController.handleSSOCallback);
 
 module.exports = router;
