@@ -63,7 +63,7 @@ const registerStoreWithEmailPassword = async (email, password) => {
     }
 };
 
-const updateStoreInformation = async (storeId, storeName, phoneNumber, storeAddress, openingTime, closingTime) => {
+const updateStoreInformation = async (storeId, storeName, avatar, phoneNumber, storeAddress, openingTime, closingTime) => {
     try {
         // Find the store by ID and update the remaining information
         const store = await Store.findById(storeId);
@@ -73,6 +73,7 @@ const updateStoreInformation = async (storeId, storeName, phoneNumber, storeAddr
 
         // Update store information
         store.storeName = storeName;
+        store.avatar = avatar;
         store.phoneNumber = phoneNumber;
         store.storeAddress = storeAddress;
         store.openingTime = openingTime;

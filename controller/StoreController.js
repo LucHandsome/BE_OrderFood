@@ -20,10 +20,10 @@ const registerStoreWithEmail = async (req, res) => {
 
 const updateStoreInformation = async (req, res) => {
     try {
-        const { storeId, storeName, phoneNumber, storeAddress, openingTime, closingTime } = req.body;
+        const { storeId, storeName,avatar, phoneNumber, storeAddress, openingTime, closingTime } = req.body;
 
         // Call service to update the remaining store information
-        const result = await StoreService.updateStoreInformation(storeId, storeName, phoneNumber, storeAddress, openingTime, closingTime);
+        const result = await StoreService.updateStoreInformation(storeId, storeName,avatar, phoneNumber, storeAddress, openingTime, closingTime);
 
         return res.status(200).json({
             success: result.success,
