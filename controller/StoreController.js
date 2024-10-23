@@ -1,22 +1,40 @@
 const StoreService = require("../services/StoreService");
 const mongoose = require('mongoose'); 
 
-const registerStore = async (req, res) => {
+const registerStoreWithEmail = async (req, res) => {
     try {
-        const { storeName, email, password, phoneNumber, storeAddress, openingTime, closingTime } = req.body;
-        
-        // Gọi đến service để xử lý logic đăng ký
-        const result = await StoreService.registerStoreWithPassword(storeName, email, password, phoneNumber, storeAddress, openingTime, closingTime);
+        const { email, password } = req.body;
 
-        return res.status(201).json({ 
+        // Call service to handle email and password registration
+        const result = await StoreService.registerStoreWithEmailPassword(email, password);
+
+        return res.status(201).json({
             success: result.success,
             message: result.message,
-            store: result.store
+            storeId: result.storeId, // Return the store ID for future updates
         });
     } catch (error) {
         return res.status(500).json({ success: false, message: error.message });
     }
 };
+
+const updateStoreInformation = async (req, res) => {
+    try {
+        const { storeId, storeName, phoneNumber, storeAddress, openingTime, closingTime } = req.body;
+
+        // Call service to update the remaining store information
+        const result = await StoreService.updateStoreInformation(storeId, storeName, phoneNumber, storeAddress, openingTime, closingTime);
+
+        return res.status(200).json({
+            success: result.success,
+            message: result.message,
+            store: result.store, // Return updated store details
+        });
+    } catch (error) {
+        return res.status(500).json({ success: false, message: error.message });
+    }
+};
+
 
 const loginStore = async (req, res) => {
     try {
@@ -199,7 +217,8 @@ const getAllStores = async (req, res) => {
 };
 module.exports = {
     getInforStore,
-    registerStore,
+    registerStoreWithEmail,
+    updateStoreInformation,
     loginStore,
     sendOtp,
     verifyOtp,

@@ -44,19 +44,46 @@ const sendOtp = async (email) => {
 };
 
 // Hàm đăng ký cửa hàng với mật khẩu
-const registerStoreWithPassword = async (storeName, email, password, phoneNumber, storeAddress, openingTime, closingTime) => {
+const registerStoreWithEmailPassword = async (email, password) => {
     try {
         const hashedPassword = await bcrypt.hash(password, 10);
-        const store = new Store({ email, storeName, password: hashedPassword, phoneNumber, storeAddress, openingTime, closingTime });
         
+        // Save the initial registration info (email and password only)
+        const store = new Store({ email, password: hashedPassword });
+        
+        // Send OTP to the store owner's email for verification
+        await sendOtp(email);
+        
+        // Save the store (without other information)
         await store.save();
 
-        // Gửi OTP sau khi tạo cửa hàng
-        await sendOtp(email);
-
-        return { success: true, message: 'Store registered successfully. OTP sent to email.', store };
+        return { success: true, message: 'OTP sent to email. Please verify.', storeId: store._id };
     } catch (error) {
-        throw new Error('Error during store registration: ' + error.message);
+        throw new Error('Error during registration: ' + error.message);
+    }
+};
+
+const updateStoreInformation = async (storeId, storeName, phoneNumber, storeAddress, openingTime, closingTime) => {
+    try {
+        // Find the store by ID and update the remaining information
+        const store = await Store.findById(storeId);
+        if (!store) {
+            throw new Error('Store not found');
+        }
+
+        // Update store information
+        store.storeName = storeName;
+        store.phoneNumber = phoneNumber;
+        store.storeAddress = storeAddress;
+        store.openingTime = openingTime;
+        store.closingTime = closingTime;
+
+        // Save the updated store information
+        await store.save();
+
+        return { success: true, message: 'Store information updated successfully', store };
+    } catch (error) {
+        throw new Error('Error updating store information: ' + error.message);
     }
 };
 
@@ -234,7 +261,8 @@ module.exports = {
     updateStore,
     verifyLoginOtp,
     verifyOtp,
-    registerStoreWithPassword,
+    registerStoreWithEmailPassword,
+    updateStoreInformation,
     sendOtp,
     loginStore,
     getRandomStores,

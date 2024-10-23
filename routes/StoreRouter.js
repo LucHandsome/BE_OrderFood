@@ -3,7 +3,8 @@ const router = express.Router();
 const StoreController = require('../controller/StoreController.js');
 
 router.post('/verify-otp', StoreController.verifyOtp);
-router.post('/register', StoreController.registerStore);
+router.post('/register', StoreController.registerStoreWithEmail);
+router.put('/update-store-info', StoreController.updateStoreInformation);
 router.post('/login', StoreController.loginStore);
 router.post('/verify-login-otp', StoreController.verifyLoginOtp);
 router.get('/getInforStore/:storeId',StoreController.getInforStore);
