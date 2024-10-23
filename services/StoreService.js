@@ -59,6 +59,7 @@ const registerStoreWithEmailPassword = async (email, password) => {
 
         return { success: true, message: 'OTP sent to email. Please verify.', storeId: store._id };
     } catch (error) {
+        console.error('Error saving store:', error);
         throw new Error('Error during registration: ' + error.message);
     }
 };

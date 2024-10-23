@@ -3,9 +3,11 @@ const mongoose = require('mongoose');
 
 const registerStoreWithEmail = async (req, res) => {
     console.log(req.body); // Add this line for debugging
+    const { email, password } = req.body;
+    if (!email || !password) {
+        return res.status(400).json({ success: false, message: 'Please provide all required fields.' });
+    }
     try {
-        const { email, password } = req.body;
-
         const result = await StoreService.registerStoreWithEmailPassword(email, password);
         
         return res.status(201).json({
@@ -14,6 +16,7 @@ const registerStoreWithEmail = async (req, res) => {
             storeId: result.storeId,
         });
     } catch (error) {
+        console.error('Error during registration:', error);
         return res.status(500).json({ success: false, message: error.message });
     }
 };
