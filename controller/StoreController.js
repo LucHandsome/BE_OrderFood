@@ -2,21 +2,22 @@ const StoreService = require("../services/StoreService");
 const mongoose = require('mongoose'); 
 
 const registerStoreWithEmail = async (req, res) => {
+    console.log(req.body); // Add this line for debugging
     try {
         const { email, password } = req.body;
 
-        // Call service to handle email and password registration
         const result = await StoreService.registerStoreWithEmailPassword(email, password);
-
+        
         return res.status(201).json({
             success: result.success,
             message: result.message,
-            storeId: result.storeId, // Return the store ID for future updates
+            storeId: result.storeId,
         });
     } catch (error) {
         return res.status(500).json({ success: false, message: error.message });
     }
 };
+
 
 const updateStoreInformation = async (req, res) => {
     try {
