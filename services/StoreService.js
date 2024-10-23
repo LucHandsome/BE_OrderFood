@@ -47,15 +47,18 @@ const sendOtp = async (email) => {
 const registerStoreWithEmailPassword = async (email, password) => {
     try {
         const hashedPassword = await bcrypt.hash(password, 10);
-        
+        const storeData = { email, password: hashedPassword };
+        console.log('Store data to save:', storeData); // Log thông tin sẽ được lưu
         // Save the initial registration info (email and password only)
         const store = new Store({ email, password: hashedPassword });
-        
+        console.log("store ne: "+store);
+
+        // Save the store (without other information)
+        await store.save();
         // Send OTP to the store owner's email for verification
         await sendOtp(email);
         
-        // Save the store (without other information)
-        await store.save();
+
 
         return { success: true, message: 'OTP sent to email. Please verify.', storeId: store._id };
     } catch (error) {

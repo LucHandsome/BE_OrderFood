@@ -2,17 +2,17 @@
 const mongoose = require('mongoose');
 
 const StoreSchema = new mongoose.Schema({
-    storeName: { type: String, required: false, unique: true },
-    email: { type: String, required: true, unique: true },
-    password: { type: String, required: true },
-    otp: { type: String },
-    otpExpire: {type: String},
-    avatar: {type: String, required: false},
-    phoneNumber: { type: String, required: false},
-    storeAddress: { type: String, required: false},
-    openingTime: { type: String, required: false },
-    closingTime: { type: String, required: false }, 
-    storeStatus: { type: String, required: false},
+    storeName: { type: String, required: false, default: 'Chưa đặt tên' }, // Có thể không yêu cầu
+    email: { type: String, required: true, unique: true }, // Yêu cầu email
+    password: { type: String, required: true }, // Yêu cầu password
+    otp: { type: String }, // Có thể không yêu cầu
+    otpExpire: { type: String }, // Có thể không yêu cầu
+    avatar: { type: String, required: false }, // Có thể không yêu cầu
+    phoneNumber: { type: String, required: false }, // Có thể không yêu cầu
+    storeAddress: { type: String, required: false }, // Có thể không yêu cầu
+    openingTime: { type: String, required: false }, // Có thể không yêu cầu
+    closingTime: { type: String, required: false }, // Có thể không yêu cầu
+    storeStatus: { type: String, required: false }, // Có thể không yêu cầu
 });
 
 const Store = mongoose.model('Store', StoreSchema);
