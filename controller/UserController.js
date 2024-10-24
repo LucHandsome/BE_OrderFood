@@ -1,5 +1,8 @@
 const userService = require('../services/UserService');
 const jwt = require('jsonwebtoken');
+const mongoose = require('mongoose');
+const User = require('../models/User')
+
 
 // Hàm đăng ký người dùng
 const registerUser = async (req, res) => {
@@ -130,12 +133,48 @@ const handleSSOCallback = async (req, res) => {
         res.status(500).json({ error: error.message });
     }
 };
+const updateUserProfile = async (req, res) => {
+ try {
+    const userId = req.params.id;
+    const { name, dateOfBirth, gender, address, phoneNumber, introduce } = req.body;
 
+    const updatedUser = await User.findByIdAndUpdate(
+      userId,
+      { name, dateOfBirth, gender, address, phoneNumber, introduce },
+      { new: true }
+    );
+
+    if (!updatedUser) {
+      return res.status(404).json({ error: 'Người dùng không tồn tại' });
+    }
+
+    res.json(updatedUser);
+  } catch (err) {
+    res.status(500).json({ error: 'Lỗi cập nhật thông tin người dùng' });
+  }
+};
+
+// Lấy thông tin cá nhân người dùng
+const getUserProfileFromDB = async (req, res) => {
+    try {
+        const userId = req.params.id;
+        console.log(userId)
+        const user = await User.findById(userId);
+        if (!user) {
+          return res.status(404).json({ error: 'Người dùng không tồn tại' });
+        }
+        res.json(user);
+      } catch (err) {
+        res.status(500).json({ error: 'Lỗi lấy thông tin người dùng' });
+      }
+};
 module.exports = {
     handleSSOCallback,
     registerUser,
     logout,
     verifyLoginOtp,
     loginWithOtp,
-    verifyOtp
+    verifyOtp,
+    updateUserProfile,
+    getUserProfileFromDB
 }

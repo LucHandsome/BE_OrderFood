@@ -74,24 +74,14 @@ const deleteCategory = (id) => {
 };
 
 // Get all categories by store ID
-const getAllCategorys = (store_Id) => {
-    return new Promise(async (resolve, reject) => {
-        try {
-            const categories = await Category.find({ Store_id: store_Id }); // Sử dụng Store_id thay vì storeId
-            resolve({
-                status: 'OK',
-                message: 'Categories fetched successfully',
-                data: categories
-            });
-        } catch (error) {
-            console.error('Error fetching Categories:', error);
-            reject({
-                status: 'ERR',
-                message: error.message
-            });
-        }
-    });
-};
+const getAllCategories = async () => {
+    try {
+      const categories = await Category.find();  // Lấy tất cả các danh mục từ DB
+      return categories;
+    } catch (error) {
+      throw new Error('Không thể lấy danh mục: ' + error.message);
+    }
+  };
 
 // Get category by ID
 const getCategoryByID = (id) => {
@@ -130,6 +120,6 @@ module.exports = {
     createCategory,
     updateCategory,
     deleteCategory,
-    getAllCategorys,
+    getAllCategories,
     getCategoryByID
 };

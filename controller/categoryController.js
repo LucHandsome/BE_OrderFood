@@ -4,16 +4,14 @@ const mongoose = require('mongoose');
 const createCategory = async (req, res) => {
     try {
         const { categoryName } = req.body;
-        const { storeId } = req.params; // Lấy storeId từ tham số URL
-
-        if (!categoryName || !storeId) {
+        if (!categoryName) {
             return res.status(400).json({
                 status: 'ERR',
                 message: 'Category name and storeId are required'
             });
         }
 
-        const result = await categoryService.createCategory({ categoryName, Store_id: storeId }); // Sửa thành Store_id
+        const result = await categoryService.createCategory({ categoryName }); // Sửa thành Store_id
         return res.status(200).json(result);
     } catch (e) {
         return res.status(500).json({
@@ -59,26 +57,14 @@ const deleteCategory = async (req, res) => {
     }
 };
 
-const getAllCategorys = async (req, res) => {
+const getAllCategories = async (req, res) => {
     try {
-        const { storeId } = req.params;
-
-        if (!mongoose.Types.ObjectId.isValid(storeId)) {
-            return res.status(400).json({
-                status: 'ERR',
-                message: 'Invalid store id'
-            });
-        }
-
-        const result = await categoryService.getAllCategorys(storeId); // Sử dụng categoryService
-        return res.status(200).json(result);
-    } catch (e) {
-        return res.status(500).json({
-            status: 'ERR',
-            message: e.message
-        });
+      const categories = await categoryService.getAllCategories();  // Gọi service để lấy dữ liệu
+      res.status(200).json(categories);  // Trả về danh sách các danh mục
+    } catch (error) {
+      res.status(500).json({ message: 'Lỗi khi lấy danh mục: ' + error.message });
     }
-};
+  };
 
 const getCategoryByID = async (req, res) => {
     try {
@@ -98,6 +84,6 @@ module.exports = {
     createCategory,
     updateCategory,
     deleteCategory,
-    getAllCategorys,
+    getAllCategories,
     getCategoryByID
 };

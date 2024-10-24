@@ -241,6 +241,7 @@ const getRandomProducts = () => {
                         Price: 1,
                         Food_detail: 1,
                         Food_picture: 1,
+                        Store_id: 1,
                         storeName: { $arrayElemAt: ['$storeInfo.storeName', 0] }, // Lấy tên cửa hàng
                         categoryName: { $arrayElemAt: ['$categoryInfo.categoryName', 0] } // Lấy tên danh mục
                     }

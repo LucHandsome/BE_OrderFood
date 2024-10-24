@@ -181,8 +181,35 @@ const findOrCreateUser = async (email) => {
     }
     return user;
 };
+const updateUserProfile = async (userId, updateData) => {
+    try {
+        const updatedUser = await User.findByIdAndUpdate(
+            userId,
+            { $set: updateData },
+            { new: true, runValidators: true } // Trả về bản ghi đã cập nhật và kiểm tra dữ liệu hợp lệ
+        );
 
+        if (!updatedUser) {
+            throw new Error('User not found');
+        }
 
+        return updatedUser;
+    } catch (error) {
+        throw error;
+    }
+};
+
+const getUserProfileFromDB = async (userId) => {
+    try {
+        const user = await User.findById(userId).select('-password'); 
+        if (!user) {
+            throw new Error('User not found');
+        }
+        return user;
+    } catch (error) {
+        throw error;
+    }
+};
 module.exports = {
     getAccessToken,
     getUserProfile,
@@ -190,5 +217,7 @@ module.exports = {
     registerUserWithPassword,
     loginUser,
     verifyLoginOtp,
-    verifyOtp
+    verifyOtp,
+    updateUserProfile,
+    getUserProfileFromDB
 };
