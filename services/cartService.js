@@ -63,19 +63,21 @@ const addToCart = async (userId, storeId, productId, quantity) => {
 };
 
 
-const getCartByUserId = async (userId, storeId) => {
+const getCartByUserId = async (userId) => {
     try {
-        const cart = await Cart.findOne({ userId, storeId }).populate('items.productId');
-        
+        // Chỉ tìm kiếm giỏ hàng dựa trên userId, không cần storeId
+        const cart = await Cart.find({ userId }).populate('items.productId');
+
         if (!cart) {
             throw new Error('Giỏ hàng trống.');
         }
-        
+
         return cart;
     } catch (error) {
         throw new Error(error.message);
     }
 };
+
 
 
 // Hàm cập nhật số lượng sản phẩm trong giỏ hàng
