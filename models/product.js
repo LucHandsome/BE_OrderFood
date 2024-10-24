@@ -8,7 +8,7 @@ const productSchema = new mongoose.Schema({
     Food_status:{
         type: String,
         enum: ['Còn', 'Hết'],
-        default: 'Hết'
+        default: 'Còn'
     },
     Store_id: { type: mongoose.Schema.Types.ObjectId, ref: 'Store', required: true },
     categoryID: { 
