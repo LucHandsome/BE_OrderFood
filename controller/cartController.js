@@ -65,13 +65,13 @@ const updateCartQuantity = async (req, res) => {
 // Controller to remove a product from the cart
 const removeCartItem = async (req, res) => {
     try {
-        const { userId, productId } = req.body;
+        const { userId, storeId, productId } = req.body;
 
         if (!userId || !productId) {
             return res.status(400).json({ message: 'userId and productId are required.' });
         }
 
-        const updatedCart = await cartService.removeCartItem(userId, productId);
+        const updatedCart = await cartService.removeCartItem(userId, storeId, productId);
 
         return res.status(200).json(updatedCart);
     } catch (error) {

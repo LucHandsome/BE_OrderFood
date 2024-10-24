@@ -115,10 +115,10 @@ const updateCartItemQuantity = async (userId, productId, newQuantity) => {
 
 
 // Hàm xóa sản phẩm khỏi giỏ hàng
-const removeCartItem = async (userId, productId) => {
+const removeCartItem = async (userId, storeId, productId) => {
     try {
-        const cart = await Cart.findOne({ userId});
-
+        const cart = await Cart.findOne({ userId, storeId});
+        console.log(userId, storeId, productId)
         if (!cart) {
             throw new Error('Giỏ hàng không tồn tại.');
         }
