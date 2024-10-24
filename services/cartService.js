@@ -44,7 +44,8 @@ const addToCart = async (userId, storeId, productId, quantity) => {
                 price: product.Price,
                 quantity: quantity,
                 imageUrl: product.Food_picture,
-                totalPrice: product.Price * quantity
+                totalPrice: product.Price * quantity,
+                storeId: store._id 
             });
         }
 
