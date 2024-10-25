@@ -15,7 +15,7 @@ const updateOrderStatus = async (orderID) => {
 const axios = require('axios');
 
 const initiatePayment = async (private_key, amount, currency, message, userID, orderID, return_url) => {
-    const baseUrl = 'https://presspay-api.azurewebsites.net';
+    const baseUrl = 'https://api-presspay.azurewebsites.net';
     const endpoint = '/api/v1/payment';
     
     try {

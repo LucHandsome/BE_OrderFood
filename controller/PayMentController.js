@@ -25,7 +25,7 @@ const handlePaymentStatus = async (req, res) => {
 const createPaymentTransaction = async (req, res) => {
     const { amount, currency, message, userID, orderID, return_url } = req.body;
 
-    const private_key = 'pk_presspay_d93fe99984de8e2f433a0ef88b7a2cdad8eb95c00756270b3170fc0ee3d7dc81'; // Thay đổi key nếu cần
+    const private_key = 'pk_presspay_82fad953e33c472656094ab3b6a3d7d3553d3215ea09fda4e7d363caae555811'; // Thay đổi key nếu cần
 
     if (!amount || !currency || !message || !userID || !orderID || !return_url) {
         return res.status(400).json({
