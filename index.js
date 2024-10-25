@@ -34,7 +34,7 @@ const corsOptions = {
     credentials: true // Cho phép cookie hoặc thông tin xác thực
 };
 
-app.use(cors(corsOptions)); // Sử dụng CORS với cấu hình
+app.use(cors()); // Sử dụng CORS với cấu hình
 app.options('*', cors(corsOptions)); // Xử lý yêu cầu preflight
 
 // Routes
