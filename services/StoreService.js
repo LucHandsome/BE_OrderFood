@@ -117,7 +117,7 @@ const verifyOtp = async (email, otp) => {
 const loginStore = async (email, password) => {
     try {
         const store = await Store.findOne({ email });
-
+        
         if (!store) {
             return { success: false, message: 'Store not found' };
         }

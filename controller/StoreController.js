@@ -43,7 +43,7 @@ const updateStoreInformation = async (req, res) => {
 const loginStore = async (req, res) => {
     try {
         const { email, password } = req.body;
-
+        console.log(email,password)
         const result = await StoreService.loginStore(email, password);
 
         if (!result.success) {

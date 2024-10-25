@@ -28,7 +28,7 @@ const PORT = process.env.PORT || 3000;
 
 // Cấu hình CORS
 const corsOptions = {
-    origin: ['http://localhost:1306','https://project-order-food.vercel.app'], // Địa chỉ frontend
+    origin: ['http://localhost:1306','https://be-order-food.vercel.app/api/user/sso/callback','https://oggee-food-fe.vercel.app/'], // Địa chỉ frontend
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'], // Bao gồm cả phương thức OPTIONS
     allowedHeaders: ['Content-Type', 'Authorization'], // Header được phép
     credentials: true // Cho phép cookie hoặc thông tin xác thực

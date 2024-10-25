@@ -19,7 +19,7 @@ const addProductToCart = async (req, res) => {
         return res.status(500).json({ message: error.message });
     }
 };
-
+ 
 // Controller to get the user's cart data
 const getCart = async (req, res) => {
     try {
