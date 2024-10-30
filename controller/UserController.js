@@ -136,11 +136,11 @@ const handleSSOCallback = async (req, res) => {
 const updateUserProfile = async (req, res) => {
  try {
     const userId = req.params.id;
-    const { name, dateOfBirth, gender, address, phoneNumber, introduce } = req.body;
+    const { name, dateOfBirth, gender, address, phoneNumber, introduce, avatar } = req.body;
 
     const updatedUser = await User.findByIdAndUpdate(
       userId,
-      { name, dateOfBirth, gender, address, phoneNumber, introduce },
+      { name, dateOfBirth, gender, address, phoneNumber, introduce, avatar },
       { new: true }
     );
 
