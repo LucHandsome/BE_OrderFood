@@ -4,7 +4,7 @@ const Schema = mongoose.Schema;
 const orderSchema = new Schema({
     customerId: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'Customer',
+        ref: 'User',
         required: true
     },
     cart: [{
@@ -34,6 +34,10 @@ const orderSchema = new Schema({
         }
     },
     totalPrice: {
+        type: Number,
+        required: true
+    },
+    totalShip: {
         type: Number,
         required: true
     },
