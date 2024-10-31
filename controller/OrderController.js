@@ -215,7 +215,7 @@ const getOrderStatus = async (req, res) => {
     const { orderID } = req.params;
 
     try {
-        const order = await OrdersService.getOrderById(orderID); // Gọi service để tìm đơn hàng
+        const order = await orderService.getOrderById(orderID); // Gọi service để tìm đơn hàng
         if (order) {
             res.status(200).json({ paymentStatus: order.paymentStatus }); // Trả về trạng thái thanh toán
         } else {
