@@ -40,10 +40,10 @@ class PaymentController {
                 // Nếu thanh toán thành công, cập nhật trạng thái đơn hàng
                 await paymentService.PointerServices.updateOrderStatus(orderID);
                 console.log(`Payment successful for order ID: ${orderID}`);
-                res.status(200).send('Payment status updated successfully.'); // Acknowledge the webhook
+                return res.status(200).json({ status: 200, orderID }); // Trả về status và orderID
             } else {
                 console.log(`Payment failed for order ID: ${orderID}, status: ${status}`);
-                res.status(400).send('Payment status not updated.');
+                return res.status(400).json({ status: status, orderID }); // Trả về status và orderID
             }
         } catch (error) {
             console.error('Error processing webhook:', error);
