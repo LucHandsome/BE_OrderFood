@@ -94,7 +94,7 @@ const getOrderById = async (id) => {
     } catch (error) {
         throw new Error(error.message);
     }
-};
+}
 module.exports = {
     createOrder,
     getPendingOrders,

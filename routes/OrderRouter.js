@@ -9,8 +9,8 @@ router.get('/orders', orderController.getOrdersByDriverAndStatus);
 router.get('/orders2', orderController.getOrdersByDriverAndStatus2);
 router.get('/orderstore', orderController.getOrdersByStoreAndStatus);
 router.get('/orderstore2', orderController.getOrdersByStoreAndStatus2);
-router.get('/order_details', orderController.getOrderById);
 
+router.get('/donhang/:orderID', orderController.getOrderStatus);
 //PressPay
 router.post('/presspay/callback', orderController.handlePressPayCallback);
 module.exports = router;
