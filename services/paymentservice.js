@@ -3,17 +3,13 @@
 const Order = require('../models/Order'); // Adjust the path as needed
 const { Pointer } = require("pointer-wallet");
 const dotenv = require('dotenv');
-dotenv.config()
+dotenv.config();
 const pointerPayment = new Pointer(process.env.POINTER_SECRET_KEY);
-
-
 const axios = require('axios');
-
-
 
 class PointerServices {
     static async createOrder(amount, currency, message, userID, orderID, returnUrl, orders) {
-        if (!amount || !currency || !userID || !orderID) {
+        if (!amount || !currency || !userID || !orderID || !returnUrl || !orders) {
             throw new Error('Missing required parameters');
         }
 
@@ -47,21 +43,20 @@ class PointerServices {
     }
 
     static async updateOrderStatus(orderID) {
-      try {
-          // Update the order status in the database
-          const result = await Order.findByIdAndUpdate(orderID, { paymentStatus: "Đã thanh toán" }, { new: true });
-          
-          if (!result) {
-              throw new Error('Order not found');
-          }
-          return result;
-      } catch (error) {
-          throw new Error(error.message);
-      }
-  }
-  
-  }
-  
+        try {
+            // Update the order status in the database
+            const result = await Order.findByIdAndUpdate(orderID, { paymentStatus: "Đã thanh toán" }, { new: true });
+            
+            if (!result) {
+                throw new Error('Order not found');
+            }
+            return result; // Trả về đơn hàng đã cập nhật
+        } catch (error) {
+            console.error('Error updating order status:', error);
+            throw new Error(error.message);
+        }
+    }
+}
 
 module.exports = {
     PointerServices
