@@ -1,11 +1,9 @@
 // paymentController.js
 const paymentService = require('../services/paymentservice');
 const dotenv = require('dotenv');
-const crypto = require('crypto');
 dotenv.config();
 
-class PaymentController {
-    static createPayment = async (req, res) => {
+    const createPayment = async (req, res) => {
         const { amount, currency, message, userID, orderID, returnUrl, orders } = req.body;
         
         // Kiểm tra các tham số đầu vào
@@ -17,7 +15,7 @@ class PaymentController {
 
         try {
             // Tạo đơn hàng
-            const paymentUrl = await paymentService.PointerServices.createOrder(amount, currency, message, userID, orderID, returnUrl, orders);
+            const paymentUrl = await paymentService.createOrder(amount, currency, message, userID, orderID, returnUrl, orders);
             res.status(200).json({ url: paymentUrl }); // Return the payment URL
         } catch (error) {
             console.error('Error creating payment order:', error.message);
@@ -26,50 +24,24 @@ class PaymentController {
     };   
     
     // Hàm để xử lý webhook
-    static async handleWebhook(req, res) {
-        const { status, orderID } = req.body; // Nhận dữ liệu từ webhook
-        const secretKey = process.env.POINTER_SECRET_KEY; // Lấy secret key từ biến môi trường
+    const handleWebhook = async(req, res) => {
+        const { status, orderID } = req.body; 
+        console.log('Webhook received:', req.body); 
 
-        console.log('Webhook received:', req.body); // Log dữ liệu nhận được
-
-        // Kiểm tra chữ ký để đảm bảo tính xác thực của webhook
-        const signature = req.headers['x-pointer-signature'];
-        const isValid = verifySignature(req.body, signature, secretKey);
-
-        if (!isValid) {
-            console.error('Invalid webhook signature');
-            return res.status(400).send('Invalid webhook signature'); // Phản hồi lỗi nếu chữ ký không hợp lệ
-        }
-
-        // Chỉ khi chữ ký hợp lệ mới xử lý và gửi phản hồi 200 OK
-        try {
-            if (status === 200) {
-                // Tìm đơn hàng theo orderID và cập nhật trạng thái
-                const updateResult = await paymentService.PointerServices.updateOrderStatus(orderID);
-                if (!updateResult) {
-                    console.error(`Order ID ${orderID} not found for update`);
-                    return res.status(404).send('Order not found'); // Nếu không tìm thấy đơn hàng
-                }
-                console.log(`Payment successful for order ID: ${orderID}`);
-                return res.status(200).json({ status: 200, orderID }); // Trả về status và orderID
-            } else {
-                console.log(`Payment failed for order ID: ${orderID}, status: ${status}`);
-                return res.status(400).json({ status: status, orderID }); // Trả về status và orderID
+        if (status === 200) {
+            const updateResult = await paymentService.updateOrderStatus(orderID);
+            if (!updateResult) {
+                console.error(`Order ID ${orderID} not found`);
+                return res.status(404).send('Order not found'); 
             }
-        } catch (error) {
-            console.error('Error processing webhook:', error);
-            return res.status(500).send('Error processing webhook.');
+            console.log(`Payment successful for order ID: ${orderID}`);
+            return res.status(200).json({ status: 200, orderID }); 
+        } else {
+            console.log(`Payment failed for order ID: ${orderID}, status: ${status}`);
+            return res.status(400).json({ status: status, orderID }); 
         }
     }
-}
-
-// Hàm kiểm tra tính hợp lệ chữ ký
-function verifySignature(payload, receivedSignature, secretKey) {
-    const hmac = crypto.createHmac('sha256', secretKey);
-    const computedSignature = hmac.update(JSON.stringify(payload)).digest('hex');
-    return computedSignature === receivedSignature;
-}
-
 module.exports = {
-    PaymentController
+    createPayment,
+    handleWebhook
 };

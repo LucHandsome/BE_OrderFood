@@ -7,8 +7,7 @@ dotenv.config();
 const pointerPayment = new Pointer(process.env.POINTER_SECRET_KEY);
 const axios = require('axios');
 
-class PointerServices {
-    static async createOrder(amount, currency, message, userID, orderID, returnUrl, orders) {
+    const createOrder = async(amount, currency, message, userID, orderID, returnUrl, orders) => {
         if (!amount || !currency || !userID || !orderID || !returnUrl || !orders) {
             throw new Error('Missing required parameters');
         }
@@ -42,7 +41,7 @@ class PointerServices {
         }
     }
 
-    static async updateOrderStatus(orderID) {
+    const updateOrderStatus = async(orderID) => {
         try {
             // Update the order status in the database
             const result = await Order.findByIdAndUpdate(orderID, { paymentStatus: "Đã thanh toán" }, { new: true });
@@ -56,8 +55,8 @@ class PointerServices {
             throw new Error(error.message);
         }
     }
-}
 
 module.exports = {
-    PointerServices
+    createOrder,
+    updateOrderStatus
 };
