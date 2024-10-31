@@ -8,28 +8,21 @@ dotenv.config();
 class PaymentController {
     static async createPayment(req, res) {
         const { amount, currency, message, userID, orderID, returnUrl, orders } = req.body;
-        
-        // Kiểm tra các tham số bắt buộc
-        if (!amount || !currency || !userID || !orderID || !returnUrl) {
-            return res.status(400).json({ message: 'Missing required parameters' });
-        }
-    
         console.log("Received data:", req.body); // Log received data
-    
+
         try {
             // Tạo đơn hàng
             const paymentUrl = await paymentService.PointerServices.createOrder(amount, currency, message, userID, orderID, returnUrl, orders);
             
             // Gửi webhook
             await this.sendWebhook({ status: 200, orderID }); // Gọi phương thức gửi webhook
-    
+
             res.status(200).json({ url: paymentUrl }); // Return the payment URL
         } catch (error) {
             console.error('Error creating payment order:', error.message);
             res.status(500).json({ message: error.message });
         }
     }
-    
 
     static async sendWebhook(data) {
         try {
