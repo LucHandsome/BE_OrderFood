@@ -8,8 +8,31 @@ const orderSchema = new Schema({
         required: true
     },
     cart: [{
-        type: Array,
-        required: true
+        productId: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'Product',
+            required: true
+        },
+        name: {
+            type: String,
+            required: true
+        },
+        image: {
+            type: String,
+            required: true
+        },
+        description: {
+            type: String,
+            required: true
+        },
+        quantity: {
+            type: Number,
+            required: true
+        },
+        price: {
+            type: Number,
+            required: true
+        }
     }],
     deliveryInfo: {
         name: {
@@ -23,14 +46,6 @@ const orderSchema = new Schema({
         address: {
             type: String,
             required: true
-        },
-        deliveryTime: {
-            type: String,
-            required: false
-        },
-        deliveryDate: {
-            type: String,
-            required: false
         }
     },
     totalPrice: {
@@ -57,8 +72,8 @@ const orderSchema = new Schema({
     },
     status: {
         type: String,
-        enum: ['Chờ xác nhận', 'Đã nhận đơn', 'Đang giao', 'Hoàn thành', 'Đã hủy'],
-        default: 'Chờ xác nhận'
+        enum: ['Đang tìm tài xế', 'Đã tìm thấy tài xế', 'Cửa hàng đang chuẩn bị', 'Đang giao', 'Hoàn thành', 'Đã hủy'],
+        default: 'Đang tìm tài xế'
     },
     driverId: {
         type: mongoose.Schema.Types.ObjectId,

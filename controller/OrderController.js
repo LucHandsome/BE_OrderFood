@@ -5,17 +5,32 @@ const paymentService = require('../services/paymentservice')
 
 const createOrder = async (req, res) => {
     try {
-        console.log('Request body:', req.body); // Log the incoming request body
+        console.log('Request body:', req.body); // Ghi log chi tiết request
+        
+        // Kiểm tra nhanh các trường bắt buộc trong req.body trước khi gọi service
+        const { deliveryInfo, cart, totalPrice, totalShip, storeId, paymentMethod } = req.body;
 
+        if (!deliveryInfo || !deliveryInfo.name || !deliveryInfo.phone || !deliveryInfo.address) {
+            return res.status(400).json({ status: 'ERROR', message: 'Delivery info is incomplete.' });
+        }
+
+        if (!cart || !Array.isArray(cart) || cart.length === 0) {
+            return res.status(400).json({ status: 'ERROR', message: 'Cart must contain at least one product.' });
+        }
+
+        if (typeof totalPrice !== 'number' || typeof totalShip !== 'number' || !storeId || !paymentMethod) {
+            return res.status(400).json({ status: 'ERROR', message: 'Total price, shipping cost, store ID, and payment method are required.' });
+        }
+
+        // Gọi orderService để tạo đơn hàng
         const order = await orderService.createOrder(req.body);
 
         res.status(201).json({ status: 'OK', data: order });
     } catch (error) {
-        console.error('Error creating order:', error);
-        res.status(500).json({ status: 'ERROR', message: error.message });
+        console.error('Error creating order:', error.message);
+        res.status(500).json({ status: 'ERROR', message: 'Error creating order. Please try again.' });
     }
 };
-
 
 const getPendingOrders = async (req, res) => {
     try {
@@ -141,7 +156,6 @@ const getOrdersByStoreAndStatus = async (req, res) => {
         });
     }
 };
-
 
 const getOrdersByStoreAndStatus2 = async (req, res) => {
     const { storeId, status } = req.query;

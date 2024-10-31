@@ -144,6 +144,35 @@ const removeCartItem = async (userId, storeId, productId) => {
     }
 };
 
+// Hàm xóa sản phẩm khỏi giỏ hàng theo danh sách productId
+const removeCartItems = async (userId, storeId, productIds) => {
+    try {
+        const cart = await Cart.findOne({ userId, storeId });
+
+        if (!cart) {
+            throw new Error('Giỏ hàng không tồn tại.');
+        }
+
+        const initialLength = cart.items.length;
+
+        // Lọc các mục giỏ hàng để xóa sản phẩm theo productId
+        cart.items = cart.items.filter(item => !productIds.includes(item.productId.toString()));
+
+        // Kiểm tra xem sản phẩm có được tìm thấy và xóa không
+        if (cart.items.length === initialLength) {
+            throw new Error('Không có sản phẩm nào được xóa.');
+        }
+
+        // Cập nhật tổng số lượng và tổng giá trị giỏ hàng
+        cart.totalItems = cart.items.reduce((acc, item) => acc + item.quantity, 0);
+        cart.totalPrice = cart.items.reduce((acc, item) => acc + item.totalPrice, 0);
+
+        await cart.save();
+        return cart; // Có thể trả về giỏ hàng đã cập nhật
+    } catch (error) {
+        throw new Error(error.message);
+    }
+};
 
 
 
@@ -151,5 +180,6 @@ module.exports = {
     addToCart,
     getCartByUserId,
     updateCartItemQuantity,
-    removeCartItem
+    removeCartItem,
+    removeCartItems
 };

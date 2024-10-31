@@ -1,27 +1,47 @@
 const Order = require('../models/Order');
 const Driver = require('../models/Driver');
 const { getIo } = require('../socket'); 
+const { removeCartItems } = require('../services/cartService');
 
 const createOrder = async (orderData) => {
-    if (!orderData.deliveryInfo) {
-        throw new Error('deliveryInfo.phone is required');
+    // Kiểm tra các trường bắt buộc trong deliveryInfo
+    if (!orderData.deliveryInfo || !orderData.deliveryInfo.name || !orderData.deliveryInfo.phone || !orderData.deliveryInfo.address) {
+        throw new Error('deliveryInfo is required and must include name, phone, and address.');
     }
-    orderData.status = 'Chờ xác nhận'; 
-    orderData.driverId = null; 
     
-    // Set default paymentStatus if not provided
+    // Kiểm tra cart có ít nhất một sản phẩm
+    if (!orderData.cart || !Array.isArray(orderData.cart) || orderData.cart.length === 0) {
+        throw new Error('Cart must contain at least one product.');
+    }
+    
+    // Kiểm tra từng sản phẩm trong cart
+    orderData.cart.forEach((item, index) => {
+        if (!item.name || !item.image || !item.description || !item.quantity || !item.price) {
+            throw new Error(`Cart item at index ${index} is missing required fields.`);
+        }
+    });
+    
+    // Thiết lập các giá trị mặc định
+    orderData.status = 'Đang tìm tài xế';
+    orderData.driverId = null;
+    
     if (!orderData.paymentStatus) {
         orderData.paymentStatus = 'Chưa thanh toán';
     }
     
     const order = new Order(orderData);
     await order.save();
+    const userId =  orderData.customerId
+    const storeId = orderData.storeId
+    const productIdsToRemove = orderData.cart.map(item => item.productId.toString());
+    await removeCartItems(userId, storeId, productIdsToRemove);//Xóa các món đã được mua trong giỏ hàng
 
     const io = getIo(); 
     io.emit('newOrder', order);
     
     return order;
 };
+
 
 const getPendingOrders = async () => {
     return await Order.find({ status: 'Chờ xác nhận' });

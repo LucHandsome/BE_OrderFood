@@ -59,7 +59,24 @@ const createPaymentTransaction = async (req, res) => {
     }
 };
 
+class PaymentController {
+    static async createPayment(req, res) {
+        const { amount, currency, message, userID, orderID, returnUrl, orders } = req.body;
+      
+        console.log("Received data:", req.body); // Log dữ liệu nhận được
+      
+        try {
+          const paymentUrl = await paymentService.PointerServices.createOrder(amount, currency, message, userID, orderID, returnUrl, orders);
+          res.status(200).json({ url: paymentUrl }); // Trả về URL thanh toán
+        } catch (error) {
+          console.error('Error creating payment order:', error.message); // Log thông báo lỗi
+          res.status(500).json({ message: error.message });
+        }
+      }
+}
+
 module.exports = {
     handlePaymentStatus,
-    createPaymentTransaction
+    createPaymentTransaction,
+    PaymentController
 };
