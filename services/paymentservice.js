@@ -5,38 +5,11 @@ const { Pointer } = require("pointer-wallet");
 const dotenv = require('dotenv');
 dotenv.config()
 const pointerPayment = new Pointer(process.env.POINTER_SECRET_KEY);
-const updateOrderStatus = async (orderID) => {
-    try {
-        // Assuming you have an Order model with an update method
-        const result = await Order.findByIdAndUpdate(orderID, {paymentStatus: "Đã thanh toán" });
-        return result
-    } catch (error) {
-        throw new Error(error.message);
-    }
-};
+
 
 const axios = require('axios');
 
-const initiatePayment = async (private_key, amount, currency, message, userID, orderID, return_url) => {
-    const baseUrl = 'https://api-presspay.azurewebsites.net';
-    const endpoint = '/api/v1/payment';
-    
-    try {
-        const response = await axios.post(`${baseUrl}${endpoint}`, {
-            private_key,
-            amount,
-            currency,
-            message,
-            userID,
-            orderID,
-            return_url
-        });
 
-        return response.data;
-    } catch (error) {
-        throw new Error(error.message);
-    }
-};
 
 class PointerServices {
     static async createOrder(amount, currency, message, userID, orderID, returnUrl, orders) {
@@ -69,11 +42,18 @@ class PointerServices {
         }
       }
     }
+    static async updateOrderStatus(orderID) {
+      try {
+          // Update the order status in the database
+          const result = await Order.findByIdAndUpdate(orderID, { paymentStatus: "Đã thanh toán" });
+          return result;
+      } catch (error) {
+          throw new Error(error.message);
+      }
+  }
   }
   
 
 module.exports = {
-    updateOrderStatus,
-    initiatePayment,
     PointerServices
 };
