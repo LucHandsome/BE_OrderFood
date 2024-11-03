@@ -41,7 +41,7 @@ const getCart = async (req, res) => {
 // Controller to update the quantity of a product in the cart
 const updateCartQuantity = async (req, res) => {
     try {
-        const { userId, productId, quantity } = req.body; // Adjusted from newQuantity to quantity
+        const { userId, storeId, productId, quantity } = req.body; // Adjusted from newQuantity to quantity
         console.log("user:" + userId + ", pro: " + productId + ", soluong:" + quantity);
 
         // Input validation
@@ -53,7 +53,7 @@ const updateCartQuantity = async (req, res) => {
             return res.status(400).json({ message: 'Quantity cannot be negative.' });
         }
 
-        const updatedCart = await cartService.updateCartItemQuantity(userId, productId, quantity);
+        const updatedCart = await cartService.updateCartItemQuantity(userId, storeId, productId, quantity);
 
         return res.status(200).json(updatedCart); // Return the updated cart
     } catch (error) {

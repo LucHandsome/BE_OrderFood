@@ -72,8 +72,8 @@ const orderSchema = new Schema({
     },
     status: {
         type: String,
-        enum: ['Đang tìm tài xế', 'Đã tìm thấy tài xế', 'Cửa hàng đang chuẩn bị', 'Đang giao', 'Hoàn thành', 'Đã hủy'],
-        default: 'Đang tìm tài xế'
+        enum: ['Chờ xác nhận','Cửa hàng xác nhận','Đang tìm tài xế', 'Đã tìm thấy tài xế', 'Chờ lấy hàng', 'Đang giao', 'Hoàn thành', 'Đã hủy'],
+        default: 'Chờ xác nhận'
     },
     driverId: {
         type: mongoose.Schema.Types.ObjectId,

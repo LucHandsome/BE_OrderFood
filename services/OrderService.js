@@ -41,8 +41,98 @@ const createOrder = async (orderData) => {
     
     return order;
 };
+//Lấy đơn hàng có trạng thái là Chờ xác nhận
+const getOrdersByStatusForCustomer = async (customerId, status = 'Chờ xác nhận') => {
+    try {
+        const orders = await Order.find({ customerId, status });
+        return orders;
+    } catch (error) {
+        throw new Error('Error fetching orders');
+    }
+};
+
+const getOrdersByCustomerId = async (customerId) => {
+    try {
+        const orders = await Order.find({ customerId });
+        return orders;
+    } catch (error) {
+        throw new Error('Error fetching orders');
+    }
+};
+
+const getOrdersByStoreId = async (storeId) => {
+    try {
+        const orders = await Order.find({ storeId });
+        return orders;
+    } catch (error) {
+        throw new Error('Error fetching orders');
+    }
+};
 
 
+const cancelOrder = async (orderId) => {
+    try {
+        const order = await Order.findById(orderId); // Find the order by ID
+
+        if (!order) {
+            throw new Error('Order not found');
+        }
+
+        // Check if the current status is 'Chờ xác nhận'
+        if (order.status === 'Chờ xác nhận') {
+            order.status = 'Đã hủy'; // Update status to 'Đã hủy'
+            await order.save(); // Save the updated order
+            return { message: 'Order has been canceled successfully' };
+        } else {
+            throw new Error('Cannot cancel this order, current status is not Chờ xác nhận');
+        }
+    } catch (error) {
+        throw new Error(error.message); // Propagate the error to the controller
+    }
+};
+
+const acceptOrder = async (orderId) => {
+    try {
+        const order = await Order.findById(orderId); // Tìm đơn hàng theo ID
+
+        if (!order) {
+            throw new Error('Order not found');
+        }
+
+        // Kiểm tra trạng thái hiện tại là 'Chờ xác nhận'
+        if (order.status === 'Chờ xác nhận') {
+            order.status = 'Cửa hàng xác nhận'; // Cập nhật trạng thái
+            await order.save(); // Lưu đơn hàng đã cập nhật
+            return { message: 'Order has been accepted successfully' };
+        } else {
+            throw new Error('Cannot accept this order, current status is not Chờ xác nhận');
+        }
+    } catch (error) {
+        throw new Error(error.message); // Chuyển lỗi lên controller
+    }
+};
+const completeOrder = async (orderId) => {
+    try {
+        const order = await Order.findById(orderId); // Tìm đơn hàng theo ID
+
+        if (!order) {
+            throw new Error('Order not found');
+        }
+
+        // Kiểm tra trạng thái hiện tại là 'Cửa hàng xác nhận'
+        if (order.status === 'Đã tìm thấy tài xế') {
+            order.status = 'Chờ lấy hàng'; // Cập nhật trạng thái
+            await order.save(); // Lưu đơn hàng đã cập nhật
+            return { message: 'Order has been completed successfully' };
+        } else {
+            throw new Error('Cannot complete this order, current status is not Đã tìm thấy tài xế');
+        }
+    } catch (error) {
+        throw new Error(error.message); // Chuyển lỗi lên controller
+    }
+};
+
+//-----------------------
 const getPendingOrders = async () => {
     return await Order.find({ status: 'Chờ xác nhận' });
 };
@@ -104,5 +194,11 @@ module.exports = {
     findOrdersByStoreAndStatus,
     findOrdersByStoreAndStatus2,
     updatePaymentStatus,
-    getOrderById
+    getOrderById, 
+    getOrdersByStatusForCustomer, //Lấy đơn hàng có trạng thái là Chờ xác nhận,
+    getOrdersByCustomerId,
+    cancelOrder,
+    getOrdersByStoreId,
+    acceptOrder,
+    completeOrder
 };

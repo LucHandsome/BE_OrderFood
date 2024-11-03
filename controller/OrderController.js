@@ -32,6 +32,72 @@ const createOrder = async (req, res) => {
     }
 };
 
+const getOrdersByStatusForCustomer = async (req, res) => {
+    const customerId = req.params.customerId;
+    try {
+        const orders = await orderService.getOrdersByStatusForCustomer(customerId);
+        res.status(200).json(orders);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
+
+const getOrdersByCustomerId = async (req, res) => {
+    const customerId = req.params.customerId; // Get customerId from request parameters
+    try {
+        const orders = await orderService.getOrdersByCustomerId(customerId); // Call the service to get orders
+        res.status(200).json(orders); // Respond with the orders
+    } catch (error) {
+        res.status(500).json({ error: error.message }); // Handle any errors that occur
+    }
+};
+const getOrdersByStoreId = async (req, res) => {
+    const storeId = req.params.storeId; // Get customerId from request parameters
+    try {
+        const orders = await orderService.getOrdersByStoreId(storeId); // Call the service to get orders
+        res.status(200).json(orders); // Respond with the orders
+    } catch (error) {
+        res.status(500).json({ error: error.message }); // Handle any errors that occur
+    }
+};
+const cancelOrder = async (req, res) => {
+    const { orderId } = req.params;
+
+    try {
+        const result = await orderService.cancelOrder(orderId); // Call the service method
+        res.status(200).json(result); // Respond with success message
+    } catch (error) {
+        if (error.message === 'Order not found') {
+            return res.status(404).json({ error: error.message }); // Handle order not found
+        }
+        if (error.message.includes('Cannot cancel')) {
+            return res.status(400).json({ error: error.message }); // Handle status check error
+        }
+        return res.status(500).json({ error: error.message }); // Handle server errors
+    }
+};
+const acceptOrder = async (req, res) => {
+    const { orderId } = req.params; // Lấy orderId từ tham số URL
+
+    try {
+        const result = await orderService.acceptOrder(orderId); // Gọi hàm acceptOrder
+        res.status(200).json(result); // Trả về phản hồi thành công
+    } catch (error) {
+        res.status(400).json({ message: error.message }); // Trả về lỗi
+    }
+};
+const completeOrder = async (req, res) => {
+    const { orderId } = req.params; // Lấy orderId từ tham số URL
+
+    try {
+        const result = await orderService.completeOrder(orderId); // Gọi hàm completeOrder
+        res.status(200).json(result); // Trả về phản hồi thành công
+    } catch (error) {
+        res.status(400).json({ message: error.message }); // Trả về lỗi
+    }
+};
+
+//---------------------------------
 const getPendingOrders = async (req, res) => {
     try {
         const pendingOrders = await orderService.getPendingOrders();
@@ -235,5 +301,11 @@ module.exports = {
     getOrdersByStoreAndStatus,
     getOrdersByStoreAndStatus2,
     handlePressPayCallback,
-    getOrderStatus
+    getOrderStatus,
+    getOrdersByStatusForCustomer ,//Lấy đơn hàng có trạng thái là Chờ xác nhận
+    getOrdersByCustomerId,
+    cancelOrder,
+    getOrdersByStoreId,
+    acceptOrder,
+    completeOrder
 };

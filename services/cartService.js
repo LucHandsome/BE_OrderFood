@@ -81,27 +81,27 @@ const getCartByUserId = async (userId) => {
 
 
 // Hàm cập nhật số lượng sản phẩm trong giỏ hàng
-const updateCartItemQuantity = async (userId, productId, newQuantity) => {
+const updateCartItemQuantity = async (userId, storeId, productId, newQuantity) => {
     try {
-        // Tìm giỏ hàng của người dùng cho cửa hàng cụ thể
-        const cart = await Cart.findOne({ userId});
+        // Tìm giỏ hàng của người dùng theo storeId
+        const cart = await Cart.findOne({ userId, storeId });
 
         if (!cart) {
-            throw new Error('Giỏ hàng không tồn tại.');
+            throw new Error('Giỏ hàng không tồn tại cho cửa hàng này.');
         }
 
-        // Tìm sản phẩm trong giỏ hàng
+        // Tìm sản phẩm trong giỏ hàng của cửa hàng
         const item = cart.items.find(item => item.productId.toString() === productId);
 
         if (!item) {
-            throw new Error('Sản phẩm không tồn tại trong giỏ hàng.');
+            throw new Error('Sản phẩm không tồn tại trong giỏ hàng của cửa hàng này.');
         }
 
-        // Cập nhật số lượng mới
+        // Cập nhật số lượng và tổng giá mới cho sản phẩm
         item.quantity = newQuantity;
         item.totalPrice = item.quantity * item.price;
 
-        // Cập nhật tổng số lượng và tổng giá trị giỏ hàng
+        // Cập nhật tổng số lượng và tổng giá trị cho giỏ hàng của cửa hàng
         cart.totalItems = cart.items.reduce((acc, item) => acc + item.quantity, 0);
         cart.totalPrice = cart.items.reduce((acc, item) => acc + item.totalPrice, 0);
 
@@ -111,6 +111,7 @@ const updateCartItemQuantity = async (userId, productId, newQuantity) => {
         throw new Error(error.message);
     }
 };
+
 
 
 
