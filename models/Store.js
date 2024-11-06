@@ -2,7 +2,7 @@
 const mongoose = require('mongoose');
 
 const StoreSchema = new mongoose.Schema({
-    storeName: { type: String, required: false, default: 'Chưa đặt tên' }, // Có thể không yêu cầu
+    storeName: { type: String, required: false }, // Có thể không yêu cầu
     email: { type: String, required: true, unique: true }, // Yêu cầu email
     password: { type: String, required: true }, // Yêu cầu password
     otp: { type: String }, // Có thể không yêu cầu

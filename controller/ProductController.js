@@ -139,7 +139,7 @@ const getProductsByStore = async (req, res) => {
 const getProductById = async (req, res) => {
     try {
         const { id } = req.params;
-
+        console.log(id)
         // Validate product ID format
         if (!mongoose.Types.ObjectId.isValid(id)) {
             return res.status(400).json({
@@ -147,9 +147,9 @@ const getProductById = async (req, res) => {
                 message: 'Invalid product ID'
             });
         }
-
         // Call the service to get the product by ID
         const product = await ProductService.getProductById(id);
+        console.log(product)
 
         if (!product) {
             return res.status(404).json({
