@@ -96,7 +96,27 @@ const completeOrder = async (req, res) => {
         res.status(400).json({ message: error.message }); // Trả về lỗi
     }
 };
-
+const updateOrderRatingStatus = async (req, res) => {
+    try {
+      const orderId = req.params.id;
+      const { hasRated } = req.body;
+  
+      const order = await Order.findByIdAndUpdate(
+        orderId,
+        { hasRated: hasRated },
+        { new: true } // Trả về bản ghi đã được cập nhật
+      );
+  
+      if (!order) {
+        return res.status(404).json({ message: 'Đơn hàng không tồn tại' });
+      }
+  
+      res.status(200).json({ message: 'Cập nhật trạng thái đánh giá thành công', order });
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ message: 'Có lỗi xảy ra khi cập nhật đơn hàng' });
+    }
+  };
 //---------------------------------
 const getPendingOrders = async (req, res) => {
     try {
@@ -307,5 +327,6 @@ module.exports = {
     cancelOrder,
     getOrdersByStoreId,
     acceptOrder,
-    completeOrder
+    completeOrder,
+    updateOrderRatingStatus
 };

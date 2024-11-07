@@ -14,5 +14,4 @@ router.get('/product/:productId', RatingController.getRatingsForProduct);
 
 router.post('/respond/:ratingId', RatingController.respondToRating);
 
-
 module.exports = router;

@@ -17,6 +17,7 @@ router.get('/orders', orderController.getOrdersByDriverAndStatus);
 router.get('/orders2', orderController.getOrdersByDriverAndStatus2);
 router.get('/orderstore', orderController.getOrdersByStoreAndStatus);
 router.get('/orderstore2', orderController.getOrdersByStoreAndStatus2);
+router.put('/:id/rate', orderController.updateOrderRatingStatus);
 
 router.get('/donhang/:orderID', orderController.getOrderStatus);
 //PressPay

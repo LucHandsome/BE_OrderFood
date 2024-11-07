@@ -66,6 +66,7 @@ const respondToRating = async (req, res) => {
         res.status(500).json({ message: 'Failed to add response to rating.' });
     }
 };
+
 module.exports = {
     createRating,
     getRatingsForOrder,
