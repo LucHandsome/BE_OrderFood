@@ -191,7 +191,7 @@ const updateStore = async (req, res) => {
 };
 const getRandomStores = async (req, res) => {
     try {
-        const stores = await storeService.getRandomStores();
+        const stores = await StoreService.getRandomStores();
         res.status(200).json({
             status: 'OK',
             message: 'Successfully fetched random stores',
@@ -206,7 +206,7 @@ const getRandomStores = async (req, res) => {
 };
 const getAllStores = async (req, res) => {
     try {
-        const stores = await storeService.getAllStores();
+        const stores = await StoreService.getAllStores();
         res.status(200).json({
             status: 'OK',
             message: 'Successfully fetched all stores',

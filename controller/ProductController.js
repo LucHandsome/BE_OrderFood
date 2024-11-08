@@ -1,6 +1,6 @@
 const ProductService = require('../services/ProductService');
 const mongoose = require('mongoose');
-
+const Product = require('../models/product')
 const createProduct = async (req, res) => {
     try {
         const {
@@ -181,6 +181,33 @@ const getRandomProductsController = async (req, res) => {
         });
     }
 };
+const searchProducts = async (req, res) => {
+    const query = req.query.query;
+    const isNumericQuery = !isNaN(query); // Kiểm tra nếu query là số
+
+    try {
+        // Tìm kiếm theo các trường kiểu chuỗi và xử lý các trường khác một cách thích hợp
+        const products = await Product.find({
+            $or: [
+                // Tìm theo Food_name và Food_detail nếu là chuỗi
+                { Food_name: { $regex: query, $options: 'i' } },
+                { Food_detail: { $regex: query, $options: 'i' } },
+                // Tìm theo categoryID nếu query là ObjectId hợp lệ
+                ...(mongoose.Types.ObjectId.isValid(query) ? [{ categoryID: mongoose.Types.ObjectId(query) }] : []),
+                // Tìm theo Price nếu query là một số
+                ...(isNumericQuery ? [{ Price: parseFloat(query) }] : []),
+            ]
+        });
+
+        res.status(200).json(products);
+    } catch (error) {
+        console.error("Lỗi tìm kiếm sản phẩm:", error);
+        res.status(500).json({ message: 'Lỗi khi tìm kiếm sản phẩm' });
+    }
+};
+
+
+
 
 module.exports = {
     createProduct,
@@ -189,5 +216,6 @@ module.exports = {
     deleteProduct,
     getProductsByStore,
     getProductById,
-    getRandomProductsController
+    getRandomProductsController,
+    searchProducts
 };

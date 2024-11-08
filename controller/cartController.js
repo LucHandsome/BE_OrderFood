@@ -19,6 +19,32 @@ const addProductToCart = async (req, res) => {
         return res.status(500).json({ message: error.message });
     }
 };
+// const addProductToCart = async (req, res) => {
+//     try {
+//         const { productId, storeId, quantity = 1, userId, toppings = [] } = req.body; // Đảm bảo toppings là một mảng mặc định
+//         console.log(productId, storeId, quantity, userId, toppings);
+
+//         // Validate input
+//         if (!storeId || !userId) {
+//             return res.status(400).json({ message: 'Vui lòng cung cấp đầy đủ thông tin cửa hàng và người dùng.' });
+//         }
+
+//         // Nếu không có productId và toppings rỗng, báo lỗi
+//         if (!productId && toppings.length === 0) {
+//             return res.status(400).json({ message: 'Vui lòng chọn sản phẩm hoặc topping.' });
+//         }
+
+//         // Gọi hàm addToCart với cả productId và toppings
+//         const cart = await cartService.addToCart(userId, storeId, productId, quantity, toppings);
+
+//         return res.status(200).json(cart);
+//     } catch (error) {
+//         console.error('Error adding product or toppings to cart:', error.message);
+//         return res.status(500).json({ message: error.message });
+//     }
+// };
+
+
  
 // Controller to get the user's cart data
 const getCart = async (req, res) => {
