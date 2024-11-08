@@ -8,9 +8,8 @@ const addToCart = async (userId, storeId, productId, quantity) => {
     try {
         const product = await Product.findById(productId);
         const store = await Store.findById(storeId);
-        const topping = await Topping.findById(storeId);
         
-        if (!product || !store || !topping) {
+        if (!product || !store) {
             throw new Error('Sản phẩm hoặc cửa hàng không tồn tại.');
         }
 
