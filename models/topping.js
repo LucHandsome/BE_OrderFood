@@ -3,7 +3,7 @@ const mongoose = require('mongoose');
 // Topping Schema
 const toppingSchema = new mongoose.Schema({
     toppingName: { type: String, required: true },  // Tên của topping
-    toppingPrice: { type: String, require: true},
+    toppingPrice: { type: Number, require: true},
     toppingImage: { type: String, require: true},
     toppingstatus: {
         type: String,

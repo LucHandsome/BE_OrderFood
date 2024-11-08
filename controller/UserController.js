@@ -105,29 +105,30 @@ const logout = (req, res) => {
     res.clearCookie('user_auth');
     return res.status(200).json({ success: true, message: 'Logged out successfully.' });
 };
-
+//Đang sửa---------------------------------
 const handleSSOCallback = async (req, res) => {
     const { code } = req.body; // Lưu ý rằng điều này phải phù hợp với cách bạn gửi code từ frontend
-   // console.log('Received code:', code);
+   console.log('Received code:', code);
+
     if (!code) {
         return res.status(400).json({ error: 'Authorization code is required' });
     }
 
     try {
         // Lấy access token từ authorization code
-        const accessToken = await userService.getAccessToken(code);
+        const {accessToken,user} = await userService.getAccessToken(code);
 
         // Lấy thông tin người dùng từ access token
-        const userProfile = await userService.getUserProfile(accessToken);
+        // const userProfile = await userService.getUserProfile(accessToken);
 
         // Tìm hoặc tạo một người dùng mới với email từ hồ sơ
-        const user = await userService.findOrCreateUser(userProfile.email);
+        const checkUser = await userService.findOrCreateUser(user.email,user.name);
 
         // Tạo token JWT cho người dùng
-        const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, { expiresIn: '1d' });
+        const token = jwt.sign({ userId: checkUser._id }, process.env.JWT_SECRET, { expiresIn: '1d' });
 
         // Gửi phản hồi với thông tin người dùng và token
-        res.status(200).json({ message: 'User authenticated successfully', user, token, userId: user._id });
+        res.status(200).json({ message: 'User authenticated successfully', checkUser, token, userId: checkUser._id });
     } catch (error) {
         console.error('Error during SSO callback:', error);
         res.status(500).json({ error: error.message });

@@ -5,9 +5,12 @@ const nodemailer = require('nodemailer');
 const crypto = require('crypto');
 const jwt = require('jsonwebtoken'); // Dùng để tạo token cho phiên đăng nhập
 const cookieParser = require('cookie-parser');
+require('dotenv').config();
+
 
 
 const { PointerStrategy } = require('sso-pointer');
+
 
 // Cấu hình gửi email (ví dụ với Gmail)
 const transporter = nodemailer.createTransport({
@@ -144,17 +147,6 @@ const verifyLoginOtp = async (email, otp) => {
     }
 };
 
-const pointer = new PointerStrategy('123'); 
-
-// Service to get access token
-const getAccessToken = async (code) => {
-    try {
-        const { accessToken } = await pointer.getAccessToken(code);
-        return accessToken;
-    } catch (error) {
-        throw new Error('Failed to get access token');
-    }
-};
 
 // Service to verify the access token and get user profile
 const getUserProfile = async (accessToken) => {
@@ -170,11 +162,11 @@ const getUserProfile = async (accessToken) => {
 };
 
 // Service to find or create a user in the database
-const findOrCreateUser = async (email) => {
+const findOrCreateUser = async (email,name,avatar) => {
     let user = await User.findOne({ email });
     if (!user) {
         // Create a new user if one doesn't exist
-        user = await User.create({ email });
+        user = await User.create({ email, name, avatar });
         console.log("New user created:", user); // Log newly created user
     } else {
         //console.log("User found:", user); // Log existing user
@@ -210,8 +202,21 @@ const getUserProfileFromDB = async (userId) => {
         throw error;
     }
 };
+
+
+const axios = require("axios");
+const { jwtDecode } = require("jwt-decode");
+
+// const AppError = require("../helpers/handleError");
+
+const axiosInstance = axios.create({
+  baseURL: "https://oauth.pointer.io.vn",
+  headers: {
+    "Content-Type": "application/json",
+  },
+});
+
 module.exports = {
-    getAccessToken,
     getUserProfile,
     findOrCreateUser,
     registerUserWithPassword,
@@ -219,5 +224,32 @@ module.exports = {
     verifyLoginOtp,
     verifyOtp,
     updateUserProfile,
-    getUserProfileFromDB
+    getUserProfileFromDB,
+    async isTokenExpired(token) {
+        try {
+          const decoded = jwtDecode(token);
+          if (!decoded.exp) {
+            return false;
+          }
+          const currentTime = Math.floor(Date.now() / 1000);
+          return decoded.exp < currentTime;
+        } catch (error) {
+          throw new AppError("Unauthorized", 401);
+        }
+      },
+      async getAccessToken(code) {
+        console.log({
+            clientId: process.env.CLIENT_ID,
+            clientSecret: process.env.CLIENT_SECRET,
+            code,
+          })
+        const response = await axiosInstance.post("/auth/access-token", {
+          clientId: process.env.CLIENT_ID,
+          clientSecret: process.env.CLIENT_SECRET,
+          code,
+        });
+        console.log("data: "+response.data)
+        return response.data;
+
+      },
 };
