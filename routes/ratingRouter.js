@@ -2,7 +2,7 @@ const express = require("express");
 const router = express.Router();
 
 const RatingController = require('../controller/ratingController')
-const upload = require('../middleware/upload'); // Multer setup for file uploads
+const {upload} = require('../middleware/upload'); // Multer setup for file uploads
 
 // Route to add a rating
 router.post('/add',upload.array('images', 3), RatingController.createRating);

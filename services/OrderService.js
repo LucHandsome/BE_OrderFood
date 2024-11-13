@@ -22,7 +22,7 @@ const createOrder = async (orderData) => {
     });
     
     // Thiết lập các giá trị mặc định
-    orderData.status = 'Đang tìm tài xế';
+    orderData.status = 'Chờ xác nhận';
     orderData.driverId = null;
     
     if (!orderData.paymentStatus) {
@@ -68,7 +68,14 @@ const getOrdersByStoreId = async (storeId) => {
         throw new Error('Error fetching orders');
     }
 };
-
+const getOrdersByDriverId = async (driverId) => {
+    try {
+        const orders = await Order.find({ driverId });
+        return orders;
+    } catch (error) {
+        throw new Error('Error fetching orders');
+    }
+};
 
 const cancelOrder = async (orderId) => {
     try {
@@ -101,7 +108,16 @@ const acceptOrder = async (orderId) => {
 
         // Kiểm tra trạng thái hiện tại là 'Chờ xác nhận'
         if (order.status === 'Chờ xác nhận') {
-            order.status = 'Cửa hàng xác nhận'; // Cập nhật trạng thái
+            order.status = 'Đang tìm tài xế'; // Cập nhật trạng thái
+            // Gán ngẫu nhiên đơn hàng cho một tài xế
+            const assignResult = await assignOrderToRandomDriver(orderId);
+
+            if (!assignResult.success) {
+                console.error(assignResult.message);
+            } else {
+                console.log(`Đơn hàng đã được gửi cho tài xế: ${assignResult.driverId}`);
+            }
+
             await order.save(); // Lưu đơn hàng đã cập nhật
             return { message: 'Order has been accepted successfully' };
         } else {
@@ -131,6 +147,141 @@ const completeOrder = async (orderId) => {
         throw new Error(error.message); // Chuyển lỗi lên controller
     }
 };
+const takeOrder = async (orderId) => {
+    try {
+        const order = await Order.findById(orderId); // Tìm đơn hàng theo ID
+
+        if (!order) {
+            throw new Error('Order not found');
+        }
+
+        // Kiểm tra trạng thái hiện tại là 'Cửa hàng xác nhận'
+        if (order.status === 'Chờ lấy hàng') {
+            order.status = 'Đang giao'; // Cập nhật trạng thái
+            await order.save(); // Lưu đơn hàng đã cập nhật
+            return { message: 'Order has been completed successfully' };
+        } else {
+            throw new Error('Cannot complete this order, current status is not Chờ lấy hàng');
+        }
+    } catch (error) {
+        throw new Error(error.message); // Chuyển lỗi lên controller
+    }
+};
+const shipOrder = async (orderId) => {
+    try {
+        const order = await Order.findById(orderId); // Tìm đơn hàng theo ID
+
+        if (!order) {
+            throw new Error('Order not found');
+        }
+
+        // Kiểm tra trạng thái hiện tại là 'Cửa hàng xác nhận'
+        if (order.status === 'Đang giao') {
+            order.status = 'Hoàn thành'; // Cập nhật trạng thái
+            order.paymentStatus='Đã thanh toán'
+            await order.save(); // Lưu đơn hàng đã cập nhật
+            return { message: 'Order has been completed successfully' };
+        } else {
+            throw new Error('Cannot complete this order, current status is not Đang giao');
+        }
+    } catch (error) {
+        throw new Error(error.message); // Chuyển lỗi lên controller
+    }
+};
+// Gán đơn hàng ngẫu nhiên cho tài xế
+const assignOrderToRandomDriver = async (orderId) => {
+    try {
+        const drivers = await Driver.find({});
+        if (drivers.length === 0) {
+            console.error("Không có tài xế nào có sẵn");
+            return { success: false, message: 'Không có tài xế nào có sẵn' };
+        }
+
+        // Chọn ngẫu nhiên một tài xế
+        const randomDriver = drivers[Math.floor(Math.random() * drivers.length)];
+        await Order.findByIdAndUpdate(orderId, { 
+            driverId: randomDriver._id, 
+            status: 'Đang tìm tài xế' 
+        });
+        // Giả định có cơ chế thông báo cho tài xế về đơn hàng
+        console.log(`Đã gửi đơn hàng ${orderId} cho tài xế: ${randomDriver._id}`);
+
+        return { success: true, driverId: randomDriver._id };
+    } catch (error) {
+        console.error("Lỗi khi gán đơn hàng cho tài xế ngẫu nhiên:", error);
+        return { success: false, message: 'Lỗi khi gán đơn hàng cho tài xế ngẫu nhiên' };
+    }
+};
+
+// Cập nhật trạng thái đơn hàng khi cửa hàng xác nhận
+const updateOrderStatusToConfirmed = async (orderId) => {
+    try {
+        // Cập nhật trạng thái đơn hàng thành 'Đang tìm tài xế'
+        const order = await Order.findByIdAndUpdate(orderId, { status: 'Đang tìm tài xế' }, { new: true });
+
+        if (!order) {
+            console.error('Không tìm thấy đơn hàng');
+            return;
+        }
+
+        // Gán ngẫu nhiên đơn hàng cho một tài xế
+        const assignResult = await assignOrderToRandomDriver(orderId);
+
+        if (!assignResult.success) {
+            console.error(assignResult.message);
+        } else {
+            console.log(`Đơn hàng đã được gửi cho tài xế: ${assignResult.driverId}`);
+        }
+    } catch (error) {
+        console.error("Lỗi khi cập nhật trạng thái đơn hàng:", error);
+    }
+};
+
+// Xác nhận hoặc từ chối đơn hàng bởi tài xế
+const confirmOrRejectOrderByDriver = async (req, res) => {
+    const { orderId, driverId, action } = req.body; // `action` là 'confirm' hoặc 'reject'
+
+    try {
+        const order = await Order.findById(orderId);
+        if (!order) {
+            return res.status(404).json({ message: 'Không tìm thấy đơn hàng' });
+        }
+
+        if (action === 'confirm') {
+            // Nếu tài xế xác nhận đơn hàng
+            order.driverId = driverId;
+            order.status = 'Đã tìm thấy tài xế';
+            await order.save();
+
+            return res.status(200).json({ success: true, message: 'Đơn hàng đã được tài xế xác nhận' });
+        } else if (action === 'reject') {
+            // Nếu tài xế từ chối, gán đơn hàng cho tài xế khác
+            order.driverId = null; // Hủy tài xế cũ
+            await order.save();
+
+            const newDriverAssignment = await assignOrderToRandomDriver(orderId);
+            if (!newDriverAssignment.success) {
+                return res.status(500).json({ message: 'Không thể gán tài xế khác cho đơn hàng' });
+            }
+
+            // Cập nhật trạng thái đơn hàng khi gán tài xế mới
+            order.driverId = newDriverAssignment.driverId;
+            order.status = 'Đã tìm thấy tài xế';
+            await order.save();
+
+            return res.status(200).json({
+                success: true,
+                message: `Đơn hàng đã được chuyển cho tài xế mới: ${newDriverAssignment.driverId}`
+            });
+        } else {
+            return res.status(400).json({ message: 'Hành động không hợp lệ' });
+        }
+    } catch (error) {
+        console.error("Lỗi khi xác nhận hoặc từ chối đơn hàng:", error);
+        res.status(500).json({ message: 'Lỗi khi xử lý yêu cầu của tài xế' });
+    }
+};
+
 
 //-----------------------
 const getPendingOrders = async () => {
@@ -200,5 +351,11 @@ module.exports = {
     cancelOrder,
     getOrdersByStoreId,
     acceptOrder,
-    completeOrder
+    completeOrder,
+    assignOrderToRandomDriver,
+    confirmOrRejectOrderByDriver,
+    updateOrderStatusToConfirmed,
+    getOrdersByDriverId,
+    takeOrder,
+    shipOrder
 };

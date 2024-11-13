@@ -12,6 +12,15 @@ const storage = new CloudinaryStorage({
   },
 });
 
+const driverStorage = new CloudinaryStorage({
+  cloudinary: cloudinary,
+  params: {
+    folder: 'drivers', // New folder specifically for driver images
+    allowed_formats: ['jpg', 'png', 'jpeg'],
+  },
+});
+
+const uploadDriverImages = multer({ storage: driverStorage });
 const upload = multer({ storage: storage });
 
-module.exports = upload;
+module.exports = { uploadDriverImages,upload };

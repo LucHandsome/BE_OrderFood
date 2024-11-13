@@ -1,5 +1,6 @@
 const orderService = require('../services/OrderService');
 const Order = require('../models/Order')
+const Driver = require('../models/Driver')
 
 const paymentService = require('../services/paymentservice')
 
@@ -55,6 +56,15 @@ const getOrdersByStoreId = async (req, res) => {
     const storeId = req.params.storeId; // Get customerId from request parameters
     try {
         const orders = await orderService.getOrdersByStoreId(storeId); // Call the service to get orders
+        res.status(200).json(orders); // Respond with the orders
+    } catch (error) {
+        res.status(500).json({ error: error.message }); // Handle any errors that occur
+    }
+};
+const getOrdersByDriverId = async (req, res) => {
+    const driverId = req.params.driverId; // Get customerId from request parameters
+    try {
+        const orders = await orderService.getOrdersByDriverId(driverId); // Call the service to get orders
         res.status(200).json(orders); // Respond with the orders
     } catch (error) {
         res.status(500).json({ error: error.message }); // Handle any errors that occur
@@ -117,6 +127,129 @@ const updateOrderRatingStatus = async (req, res) => {
       res.status(500).json({ message: 'Có lỗi xảy ra khi cập nhật đơn hàng' });
     }
   };
+
+
+  // Gán đơn hàng ngẫu nhiên cho tài xế
+// Gán đơn hàng ngẫu nhiên cho tài xế
+const assignOrderToRandomDriver = async (orderId) => {
+    try {
+        const drivers = await Driver.find({});
+        if (drivers.length === 0) {
+            console.error("Không có tài xế nào có sẵn");
+            return { success: false, message: 'Không có tài xế nào có sẵn' };
+        }
+
+        const randomDriver = drivers[Math.floor(Math.random() * drivers.length)];
+        await Order.findByIdAndUpdate(orderId, { 
+            driverId: randomDriver._id, 
+            status: 'Đang tìm tài xế' 
+        });
+        // Giả định có cơ chế thông báo cho tài xế về đơn hàng
+        console.log(`Đã gửi đơn hàng ${orderId} cho tài xế: ${randomDriver._id}`);
+
+        return { success: true, driverId: randomDriver._id };
+    } catch (error) {
+        console.error("Lỗi khi gán đơn hàng cho tài xế ngẫu nhiên:", error);
+        return { success: false, message: 'Lỗi khi gán đơn hàng cho tài xế ngẫu nhiên' };
+    }
+};
+
+// Cập nhật trạng thái đơn hàng khi cửa hàng xác nhận
+const updateOrderStatusToConfirmed = async (req, res) => {
+    const { orderId } = req.params;
+
+    try {
+        const order = await Order.findByIdAndUpdate(orderId, { status: 'Đang tìm tài xế' }, { new: true });
+        if (!order) {
+            return res.status(404).json({ message: 'Không tìm thấy đơn hàng' });
+        }
+
+        const assignResult = await assignOrderToRandomDriver(orderId);
+
+        if (!assignResult.success) {
+            return res.status(500).json({ message: assignResult.message });
+        }
+
+        res.status(200).json({ message: `Đơn hàng đã được gửi cho tài xế: ${assignResult.driverId}` });
+    } catch (error) {
+        console.error("Lỗi khi cập nhật trạng thái đơn hàng:", error);
+        res.status(500).json({ message: 'Lỗi khi cập nhật trạng thái đơn hàng' });
+    }
+};
+
+// Xác nhận hoặc từ chối đơn hàng bởi tài xế
+const confirmOrRejectOrderByDriver = async (req, res) => {
+    const { orderId, driverId, action } = req.body;
+
+    try {
+        const order = await Order.findById(orderId);
+        if (!order) {
+            return res.status(404).json({ message: 'Không tìm thấy đơn hàng' });
+        }
+
+        if (action === 'confirm') {
+            order.driverId = driverId;
+            order.status = 'Đã tìm thấy tài xế';
+            await order.save();
+
+            return res.status(200).json({ message: 'Đơn hàng đã được tài xế xác nhận' });
+        } else if (action === 'reject') {
+            // Hủy bỏ tài xế hiện tại
+            order.driverId = null;
+            await order.save();
+
+            const newDriverAssignment = await assignOrderToRandomDriver(orderId);
+            if (!newDriverAssignment.success) {
+                return res.status(500).json({ message: 'Không thể gán tài xế khác cho đơn hàng' });
+            }
+
+            return res.status(200).json({
+                message: `Đơn hàng đã được chuyển cho tài xế mới: ${newDriverAssignment.driverId}`
+            });
+        } else {
+            return res.status(400).json({ message: 'Hành động không hợp lệ' });
+        }
+    } catch (error) {
+        console.error("Lỗi khi xác nhận hoặc từ chối đơn hàng:", error);
+        res.status(500).json({ message: 'Lỗi khi xử lý yêu cầu của tài xế' });
+    }
+};
+const getAssignedOrders = async (req, res) => {
+    const { driverId } = req.params;
+
+    try {
+        // Find orders with status "Cửa hàng xác nhận" and the specific driverId
+        const orders = await Order.find({
+            driverId: driverId,
+            status: "Đang tìm tài xế"
+        }).populate('cart.productId').populate('storeId'); // Populate product and store info if needed
+
+        res.status(200).json(orders);
+    } catch (error) {
+        console.error("Error fetching assigned orders:", error);
+        res.status(500).json({ message: 'Error fetching assigned orders' });
+    }
+};
+const takeOrder = async (req, res) => {
+    const { orderId } = req.params; // Lấy orderId từ tham số URL
+
+    try {
+        const result = await orderService.takeOrder(orderId); // Gọi hàm completeOrder
+        res.status(200).json(result); // Trả về phản hồi thành công
+    } catch (error) {
+        res.status(400).json({ message: error.message }); // Trả về lỗi
+    }
+};
+const shipOrder = async (req, res) => {
+    const { orderId } = req.params; // Lấy orderId từ tham số URL
+
+    try {
+        const result = await orderService.shipOrder(orderId); // Gọi hàm completeOrder
+        res.status(200).json(result); // Trả về phản hồi thành công
+    } catch (error) {
+        res.status(400).json({ message: error.message }); // Trả về lỗi
+    }
+};
 //---------------------------------
 const getPendingOrders = async (req, res) => {
     try {
@@ -328,5 +461,12 @@ module.exports = {
     getOrdersByStoreId,
     acceptOrder,
     completeOrder,
-    updateOrderRatingStatus
+    updateOrderRatingStatus,
+    assignOrderToRandomDriver,
+    confirmOrRejectOrderByDriver,
+    updateOrderStatusToConfirmed,
+    getAssignedOrders,
+    getOrdersByDriverId,
+    takeOrder,
+    shipOrder
 };
