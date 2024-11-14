@@ -1,5 +1,7 @@
 const StoreService = require("../services/StoreService");
 const mongoose = require('mongoose'); 
+const jwt = require('jsonwebtoken');
+
 
 const registerStoreWithEmail = async (req, res) => {
     const { email, password } = req.body;
@@ -235,15 +237,15 @@ const handleSSOCallbackStore = async (req, res) => {
         // }
         // Lấy thông tin người dùng từ access token
         // const userProfile = await userService.getUserProfile(accessToken);
-
+        console.log(user)
         // Tìm hoặc tạo một người dùng mới với email từ hồ sơ
         const checkUser = await StoreService.findOrCreateStore(user.email);
 
         // Tạo token JWT cho người dùng
         const token = jwt.sign({ storeId: checkUser._id }, process.env.JWT_SECRET, { expiresIn: '1d' });
-
         // Gửi phản hồi với thông tin người dùng và token
         res.status(200).json({ message: 'User authenticated successfully', checkUser, token, storeId: checkUser._id });
+        console.log("Sending response with token and storeId:", token, checkUser._id);
     } catch (error) {
         console.error('Error during SSO callback:', error);
         res.status(500).json({ error: error.message });

@@ -5,6 +5,15 @@ const nodemailer = require('nodemailer');
 const crypto = require('crypto');
 const jwt = require('jsonwebtoken');
 
+const { jwtDecode } = require("jwt-decode");
+const axios = require("axios");
+const axiosInstance = axios.create({
+    baseURL: "https://oauth.pointer.io.vn",
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
+  require('dotenv').config();
 // Cấu hình gửi email
 const transporter = nodemailer.createTransport({
     service: 'gmail',
@@ -268,7 +277,7 @@ const findOrCreateStore = async (email) => {
         store = await Store.create({ email });
         console.log("New STORE created:", store); // Log newly created user
     } else {
-        // console.log("User found:", user); // Log existing user
+        console.log("User found:", store); // Log existing user
         // STORE = await STORE.updateMany({name,avatar})
     }
     return store;
