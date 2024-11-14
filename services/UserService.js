@@ -9,7 +9,6 @@ require('dotenv').config();
 
 
 
-const { PointerStrategy } = require('sso-pointer');
 
 
 // Cấu hình gửi email (ví dụ với Gmail)
@@ -206,6 +205,11 @@ const getUserProfileFromDB = async (userId) => {
 
 const axios = require("axios");
 const { jwtDecode } = require("jwt-decode");
+const { PointerStrategy } = require("sso-pointer");
+const pointer = new PointerStrategy(
+  process.env.CLIENT_ID,
+  process.env.CLIENT_SECRET
+);
 
 // const AppError = require("../helpers/handleError");
 
@@ -251,5 +255,8 @@ module.exports = {
         console.log("data: "+response.data)
         return response.data;
 
+      },
+      async verifyAccessToken(accessToken){
+        return await pointer.verifyAccessToken(accessToken);
       },
 };

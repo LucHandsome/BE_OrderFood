@@ -121,6 +121,7 @@ const handleSSOCallback = async (req, res) => {
         // Lấy thông tin người dùng từ access token
         // const userProfile = await userService.getUserProfile(accessToken);
 
+        
         // Tìm hoặc tạo một người dùng mới với email từ hồ sơ
         const checkUser = await userService.findOrCreateUser(user.email,user.name);
 

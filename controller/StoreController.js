@@ -219,6 +219,36 @@ const getAllStores = async (req, res) => {
         });
     }
 };
+const handleSSOCallbackStore = async (req, res) => {
+    const { code } = req.body; // Lưu ý rằng điều này phải phù hợp với cách bạn gửi code từ frontend
+   console.log('Received code:', code);
+
+    if (!code) {
+        return res.status(400).json({ error: 'Authorization code is required' });
+    }
+
+    try {
+        // Lấy access token từ authorization code
+        const {accessToken,user} = await StoreService.getAccessToken(code);
+        // if(driverService.isTokenExpired(accessToken)){
+            
+        // }
+        // Lấy thông tin người dùng từ access token
+        // const userProfile = await userService.getUserProfile(accessToken);
+
+        // Tìm hoặc tạo một người dùng mới với email từ hồ sơ
+        const checkUser = await StoreService.findOrCreateStore(user.email);
+
+        // Tạo token JWT cho người dùng
+        const token = jwt.sign({ storeId: checkUser._id }, process.env.JWT_SECRET, { expiresIn: '1d' });
+
+        // Gửi phản hồi với thông tin người dùng và token
+        res.status(200).json({ message: 'User authenticated successfully', checkUser, token, storeId: checkUser._id });
+    } catch (error) {
+        console.error('Error during SSO callback:', error);
+        res.status(500).json({ error: error.message });
+    }
+};
 module.exports = {
     getInforStore,
     registerStoreWithEmail,
@@ -229,5 +259,6 @@ module.exports = {
     verifyLoginOtp,
     updateStore,
     getRandomStores,
-    getAllStores
+    getAllStores,
+    handleSSOCallbackStore
 }

@@ -29,6 +29,6 @@
     "oauth-pointer": "^1.0.3",
     "pointer-wallet": "^1.0.8",
     "socket.io": "^4.7.5",
-    "sso-pointer": "^1.0.5"
+    "sso-pointer": "^1.0.7"
   }
 }

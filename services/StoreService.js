@@ -261,6 +261,18 @@ const getAllStores = async () => {
         throw new Error('Error fetching all stores: ' + error.message);
     }
 };
+const findOrCreateStore = async (email) => {
+    let store = await Store.findOne({ email });
+    if (!store) {
+        // Create a new user if one doesn't exist
+        store = await Store.create({ email });
+        console.log("New STORE created:", store); // Log newly created user
+    } else {
+        // console.log("User found:", user); // Log existing user
+        // STORE = await STORE.updateMany({name,avatar})
+    }
+    return store;
+};
 module.exports = {
     getInforStore,
     updateStore,
@@ -271,5 +283,33 @@ module.exports = {
     sendOtp,
     loginStore,
     getRandomStores,
-    getAllStores
+    getAllStores,
+    findOrCreateStore,
+    async isTokenExpired(token) {
+        try {
+          const decoded = jwtDecode(token);
+          if (!decoded.exp) {
+            return false;
+          }
+          const currentTime = Math.floor(Date.now() / 1000);
+          return decoded.exp < currentTime;
+        } catch (error) {
+          throw new AppError("Unauthorized", 401);
+        }
+      },
+      async getAccessToken(code) {
+        console.log({
+            clientId: process.env.CLIENT_ID_STORE,
+            clientSecret: process.env.CLIENT_SECRET_STORE,
+            code,
+          })
+        const response = await axiosInstance.post("/auth/access-token", {
+          clientId: process.env.CLIENT_ID_STORE,
+          clientSecret: process.env.CLIENT_SECRET_STORE,
+          code,
+        });
+        console.log("data: "+response.data)
+        return response.data;
+
+      },
 }

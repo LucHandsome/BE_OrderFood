@@ -11,4 +11,6 @@ router.get('/getInforStore/:storeId',StoreController.getInforStore);
 router.put('/updatestore/:storeId',StoreController.updateStore);
 router.get('/random', StoreController.getRandomStores);
 router.get('/getAllStore', StoreController.getAllStores);
+router.post('/sso/callback-store', StoreController.handleSSOCallbackStore);
+
 module.exports = router;
