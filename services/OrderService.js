@@ -401,7 +401,7 @@ async getWeeklyRevenue(storeId) {
     const revenue = await Order.find([
       {
         $match: {
-          storeId: mongoose.Types.ObjectId(storeId),  // Lọc theo storeId
+          storeId: storeId,  // Lọc theo storeId
           createdAt: { $gte: startOfMonth, $lte: endOfMonth },
           status: 'Hoàn thành'
         }
