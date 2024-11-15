@@ -361,11 +361,10 @@ module.exports = {
     shipOrder,
     // Lấy doanh thu theo tuần (Thứ Hai - Chủ Nhật)
     // Lấy doanh thu theo tuần cho từng cửa hàng
-async getWeeklyRevenue(storeId) {
+    async getWeeklyRevenue(storeId) {
     const startOfWeek = new Date();
     startOfWeek.setDate(startOfWeek.getDate() - startOfWeek.getDay() + 1); // Bắt đầu từ Thứ Hai
     startOfWeek.setHours(0, 0, 0, 0);  // Đặt lại thời gian về 00:00:00
-  console.log(storeId)
     const endOfWeek = new Date();
     endOfWeek.setDate(startOfWeek.getDate() + 6); // Kết thúc vào Chủ Nhật
     endOfWeek.setHours(23, 59, 59, 999);  // Đặt lại thời gian về 23:59:59
@@ -376,14 +375,14 @@ async getWeeklyRevenue(storeId) {
     const revenue = await Order.aggregate([
       {
         $match: {
-            storeId: storeId,
-            createdAt: { $gte: startOfWeek, $lte: endOfWeek },
+            storeId: new mongoose.Types.ObjectId(storeId),
+            createdDate: { $gte: startOfWeek, $lte: endOfWeek },
             status: 'Hoàn thành'
         }
       },
       {
         $group: {
-          _id: { $dayOfWeek: "$createdAt" },
+          _id: { $dayOfWeek: "$createdDate" },
           totalRevenue: { $sum: "$totalPrice" }
         }
       },
@@ -396,12 +395,16 @@ async getWeeklyRevenue(storeId) {
   // Lấy doanh thu theo tháng cho từng cửa hàng
   async getMonthlyRevenue(storeId) {
     const startOfMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
+    startOfMonth.setHours(0, 0, 0, 0); 
+
     const endOfMonth = new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0);
-  
-    const revenue = await Order.find([
+    endOfMonth.setHours(23, 59, 59, 999); // Đặt thời gian cuối ngày
+    console.log(storeId)
+    console.log(startOfMonth,endOfMonth)
+    const revenue = await Order.aggregate([
       {
         $match: {
-          storeId: storeId,  // Lọc theo storeId
+          storeId: new mongoose.Types.ObjectId(storeId),
           createdAt: { $gte: startOfMonth, $lte: endOfMonth },
           status: 'Hoàn thành'
         }
@@ -426,7 +429,7 @@ async getWeeklyRevenue(storeId) {
     const revenue = await Order.aggregate([
       {
         $match: {
-          storeId: storeId,  // Lọc theo storeId
+          storeId: new mongoose.Types.ObjectId(storeId),
           createdAt: { $gte: startOfYear, $lte: endOfYear },
           status: 'Hoàn thành'
         }
