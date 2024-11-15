@@ -2,6 +2,7 @@ const Order = require('../models/Order');
 const Driver = require('../models/Driver');
 const { getIo } = require('../socket'); 
 const { removeCartItems } = require('../services/cartService');
+const mongoose = require('mongoose')
 
 const createOrder = async (orderData) => {
     // Kiểm tra các trường bắt buộc trong deliveryInfo
@@ -357,5 +358,89 @@ module.exports = {
     updateOrderStatusToConfirmed,
     getOrdersByDriverId,
     takeOrder,
-    shipOrder
+    shipOrder,
+    // Lấy doanh thu theo tuần (Thứ Hai - Chủ Nhật)
+    // Lấy doanh thu theo tuần cho từng cửa hàng
+async getWeeklyRevenue(storeId) {
+    const startOfWeek = new Date();
+    startOfWeek.setDate(startOfWeek.getDate() - startOfWeek.getDay() + 1); // Bắt đầu từ Thứ Hai
+    startOfWeek.setHours(0, 0, 0, 0);  // Đặt lại thời gian về 00:00:00
+  console.log(storeId)
+    const endOfWeek = new Date();
+    endOfWeek.setDate(startOfWeek.getDate() + 6); // Kết thúc vào Chủ Nhật
+    endOfWeek.setHours(23, 59, 59, 999);  // Đặt lại thời gian về 23:59:59
+  
+    console.log("Start of week:", startOfWeek.toISOString());
+    console.log("End of week:", endOfWeek.toISOString());
+
+    const revenue = await Order.aggregate([
+      {
+        $match: {
+            // storeId: storeId,
+            // createdAt: { $gte: startOfWeek, $lte: endOfWeek },
+            // status: 'Hoàn thành'
+        }
+      },
+      {
+        $group: {
+          _id: { $dayOfWeek: "$createdAt" },
+          totalRevenue: { $sum: "$totalPrice" }
+        }
+      },
+      { $sort: { "_id": 1 } }
+    ]);
+  console.log("doanh thu"+revenue)
+    return revenue;
+  },
+  
+  // Lấy doanh thu theo tháng cho từng cửa hàng
+  async getMonthlyRevenue(storeId) {
+    const startOfMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
+    const endOfMonth = new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0);
+  
+    const revenue = await Order.find([
+      {
+        $match: {
+        //   storeId: mongoose.Types.ObjectId(storeId),  // Lọc theo storeId
+        //   createdAt: { $gte: startOfMonth, $lte: endOfMonth },
+        //   status: 'Hoàn thành'
+        }
+      },
+      {
+        $group: {
+          _id: { $dayOfMonth: "$createdAt" },
+          totalRevenue: { $sum: "$totalPrice" }
+        }
+      },
+      { $sort: { "_id": 1 } }
+    ]);
+  
+    return revenue;
+  },
+  
+  // Lấy doanh thu theo năm cho từng cửa hàng
+  async getYearlyRevenue(storeId) {
+    const startOfYear = new Date(new Date().getFullYear(), 0, 1);
+    const endOfYear = new Date(new Date().getFullYear() + 1, 0, 0);
+  
+    const revenue = await Order.aggregate([
+      {
+        $match: {
+        //   storeId: storeId,  // Lọc theo storeId
+        //   createdAt: { $gte: startOfYear, $lte: endOfYear },
+        //   status: 'Hoàn thành'
+        }
+      },
+      {
+        $group: {
+          _id: { $month: "$createdAt" },
+          totalRevenue: { $sum: "$totalPrice" }
+        }
+      },
+      { $sort: { "_id": 1 } }
+    ]);
+  
+    return revenue;
+  }
+  
 };

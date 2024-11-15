@@ -468,5 +468,39 @@ module.exports = {
     getAssignedOrders,
     getOrdersByDriverId,
     takeOrder,
-    shipOrder
+    shipOrder,
+    // Lấy doanh thu theo tuần cho cửa hàng
+async getWeeklyRevenue(req, res) {
+    try {
+      const { storeId } = req.params;  // Lấy storeId từ req.params
+      console.log("id: " + storeId)
+      const revenue = await orderService.getWeeklyRevenue(storeId);
+      res.json(revenue);
+    } catch (error) {
+      res.status(500).json({ error: 'Lỗi khi lấy doanh thu theo tuần' });
+    }
+  },
+  
+  // Lấy doanh thu theo tháng cho cửa hàng
+  async getMonthlyRevenue(req, res) {
+    try {
+      const { storeId } = req.params;  // Lấy storeId từ req.params
+      const revenue = await orderService.getMonthlyRevenue(storeId);
+      res.json(revenue);
+    } catch (error) {
+      res.status(500).json({ error: 'Lỗi khi lấy doanh thu theo tháng' });
+    }
+  },
+  
+  // Lấy doanh thu theo năm cho cửa hàng
+  async getYearlyRevenue(req, res) {
+    try {
+      const { storeId } = req.params;  // Lấy storeId từ req.params
+      const revenue = await orderService.getYearlyRevenue(storeId);
+      res.json(revenue);
+    } catch (error) {
+      res.status(500).json({ error: 'Lỗi khi lấy doanh thu theo năm' });
+    }
+  }
+  
 };

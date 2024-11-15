@@ -29,4 +29,9 @@ router.put('/:id/rate', orderController.updateOrderRatingStatus);
 router.get('/donhang/:orderID', orderController.getOrderStatus);
 //PressPay
 router.post('/presspay/callback', orderController.handlePressPayCallback);
+
+
+router.get('/revenue/weekly/:storeId', orderController.getWeeklyRevenue);
+router.get('/revenue/monthly/:storeId', orderController.getMonthlyRevenue);
+router.get('/revenue/yearly/:storeId', orderController.getYearlyRevenue);
 module.exports = router;
