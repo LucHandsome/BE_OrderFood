@@ -376,9 +376,9 @@ async getWeeklyRevenue(storeId) {
     const revenue = await Order.aggregate([
       {
         $match: {
-            // storeId: storeId,
-            // createdAt: { $gte: startOfWeek, $lte: endOfWeek },
-            // status: 'Hoàn thành'
+            storeId: storeId,
+            createdAt: { $gte: startOfWeek, $lte: endOfWeek },
+            status: 'Hoàn thành'
         }
       },
       {
@@ -401,9 +401,9 @@ async getWeeklyRevenue(storeId) {
     const revenue = await Order.find([
       {
         $match: {
-        //   storeId: mongoose.Types.ObjectId(storeId),  // Lọc theo storeId
-        //   createdAt: { $gte: startOfMonth, $lte: endOfMonth },
-        //   status: 'Hoàn thành'
+          storeId: mongoose.Types.ObjectId(storeId),  // Lọc theo storeId
+          createdAt: { $gte: startOfMonth, $lte: endOfMonth },
+          status: 'Hoàn thành'
         }
       },
       {
@@ -426,9 +426,9 @@ async getWeeklyRevenue(storeId) {
     const revenue = await Order.aggregate([
       {
         $match: {
-        //   storeId: storeId,  // Lọc theo storeId
-        //   createdAt: { $gte: startOfYear, $lte: endOfYear },
-        //   status: 'Hoàn thành'
+          storeId: storeId,  // Lọc theo storeId
+          createdAt: { $gte: startOfYear, $lte: endOfYear },
+          status: 'Hoàn thành'
         }
       },
       {
