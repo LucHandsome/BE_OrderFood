@@ -185,33 +185,47 @@ const getRandomProductsController = async (req, res) => {
 
 const searchProducts = async (req, res) => {
     const query = req.query.query;
-    const isNumericQuery = !isNaN(query); // Check if the query is a number
+    const isNumericQuery = !isNaN(query);
 
     try {
-        // Search based on Product fields and associated Store name
+        // Xây dựng điều kiện tìm kiếm
+        const searchConditions = [
+            { Food_name: { $regex: query, $options: 'i' } },
+            { Food_detail: { $regex: query, $options: 'i' } },
+        ];
+
+        // Thêm điều kiện tìm kiếm theo categoryID nếu hợp lệ
+        if (mongoose.Types.ObjectId.isValid(query)) {
+            searchConditions.push({ categoryID: mongoose.Types.ObjectId(query) });
+        }
+
+        // Thêm điều kiện tìm kiếm theo giá nếu query là số
+        if (isNumericQuery) {
+            searchConditions.push({ Price: parseFloat(query) });
+        }
+
+        // Tìm kiếm sản phẩm
         const products = await Product.find({
-            $or: [
-                // Search by Food_name and Food_detail as strings
-                { Food_name: { $regex: query, $options: 'i' } },
-                { Food_detail: { $regex: query, $options: 'i' } },
-                // Search by categoryID if query is a valid ObjectId
-                ...(mongoose.Types.ObjectId.isValid(query) ? [{ categoryID: mongoose.Types.ObjectId(query) }] : []),
-                // Search by Price if query is a number
-                ...(isNumericQuery ? [{ Price: parseFloat(query) }] : []),
-            ]
+            $or: searchConditions
         })
         .populate({
             path: 'Store_id',
-            match: { storeName: { $regex: query, $options: 'i' } }, // Match store name if it matches the query
-            select: 'storeName storeAddress' // Select specific store fields
-        });
+            match: { storeName: { $regex: query, $options: 'i' } },
+            select: 'storeName storeAddress'
+        })
+        .limit(20); // Giới hạn số lượng sản phẩm trả về
 
-        res.status(200).json(products);
+        res.status(200).json({
+            success: true,
+            results: products.length,
+            data: products,
+        });
     } catch (error) {
         console.error("Lỗi tìm kiếm sản phẩm:", error);
-        res.status(500).json({ message: 'Lỗi khi tìm kiếm sản phẩm' });
+        res.status(500).json({ success: false, message: 'Lỗi khi tìm kiếm sản phẩm' });
     }
 };
+
 
 module.exports = {
     createProduct,

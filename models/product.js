@@ -16,6 +16,9 @@ const productSchema = new mongoose.Schema({
         ref: 'Category',
         required: true
     },
+    // spicyLevel: { type: Number, min: 0, max: 5 }, // Độ cay: 0-5
+    // vegetarian: { type: Boolean, default: false }, // Món chay
+    // tags: [{ type: String }],
 });
 
 const Product = mongoose.model('Product', productSchema);

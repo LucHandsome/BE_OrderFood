@@ -138,8 +138,13 @@ const handleSSOCallback = async (req, res) => {
 const updateUserProfile = async (req, res) => {
  try {
     const userId = req.params.id;
-    const { name, dateOfBirth, gender, address, phoneNumber, introduce, avatar } = req.body;
+    const { name, dateOfBirth, gender, address, phoneNumber, introduce } = req.body;
 
+     // Lấy URL ảnh từ multer
+     let avatar = req.body.avatar; // Avatar từ form, nếu không tải ảnh mới
+     if (req.file && req.file.path) {
+       avatar = req.file.path; // URL của ảnh mới từ Cloudinary
+     }
     const updatedUser = await User.findByIdAndUpdate(
       userId,
       { name, dateOfBirth, gender, address, phoneNumber, introduce, avatar },
