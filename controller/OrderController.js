@@ -493,10 +493,10 @@ async getWeeklyRevenue(req, res) {
   },
   
   // Lấy doanh thu theo năm cho cửa hàng
-  async getYearlyRevenue(req, res) {
+  async getDailyRevenue(req, res) {
     try {
       const { storeId } = req.params;  // Lấy storeId từ req.params
-      const revenue = await orderService.getYearlyRevenue(storeId);
+      const revenue = await orderService.getDailyRevenue(storeId);
       res.json(revenue);
     } catch (error) {
       res.status(500).json({ error: 'Lỗi khi lấy doanh thu theo năm' });

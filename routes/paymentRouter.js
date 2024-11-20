@@ -5,6 +5,6 @@ const router = express.Router();
 const paymentController = require('../controller/PayMentController');
 
 router.post('/create-payment', paymentController.createPayment);
-router.post('/payment-status/:storeId', paymentController.handleWebhook);
+router.post('/payment-status', paymentController.handleWebhook);
 
 module.exports = router;

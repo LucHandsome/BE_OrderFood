@@ -362,88 +362,115 @@ module.exports = {
     // Lấy doanh thu theo tuần (Thứ Hai - Chủ Nhật)
     // Lấy doanh thu theo tuần cho từng cửa hàng
     async getWeeklyRevenue(storeId) {
-    const startOfWeek = new Date();
-    startOfWeek.setDate(startOfWeek.getDate() - startOfWeek.getDay() + 1); // Bắt đầu từ Thứ Hai
-    startOfWeek.setHours(0, 0, 0, 0);  // Đặt lại thời gian về 00:00:00
-    const endOfWeek = new Date();
-    endOfWeek.setDate(startOfWeek.getDate() + 6); // Kết thúc vào Chủ Nhật
-    endOfWeek.setHours(23, 59, 59, 999);  // Đặt lại thời gian về 23:59:59
-  
-    console.log("Start of week:", startOfWeek.toISOString());
-    console.log("End of week:", endOfWeek.toISOString());
-
-    const revenue = await Order.aggregate([
-      {
-        $match: {
-            storeId: new mongoose.Types.ObjectId(storeId),
-            createdDate: { $gte: startOfWeek, $lte: endOfWeek },
-            status: 'Hoàn thành'
-        }
-      },
-      {
-        $group: {
-          _id: { $dayOfWeek: "$createdDate" },
-          totalRevenue: { $sum: "$totalPrice" }
-        }
-      },
-      { $sort: { "_id": 1 } }
-    ]);
-  console.log("doanh thu"+revenue)
-    return revenue;
-  },
+        const now = new Date();
+        const startOfWeek = new Date(now.setDate(now.getDate() - now.getDay() + 1)); // Thứ Hai đầu tuần
+        startOfWeek.setHours(0, 0, 0, 0);
+    
+        const endOfWeek = new Date(startOfWeek);
+        endOfWeek.setDate(startOfWeek.getDate() + 6); // Chủ Nhật
+        endOfWeek.setHours(23, 59, 59, 999);
+    
+        const revenue = await Order.aggregate([
+            {
+                $match: {
+                    storeId: new mongoose.Types.ObjectId(storeId),
+                    createdAt: { $gte: startOfWeek, $lte: endOfWeek },
+                    status: 'Hoàn thành'
+                }
+            },
+            {
+                $group: {
+                    _id: { $dayOfWeek: "$createdAt" },
+                    totalRevenue: { $sum: "$totalPrice" }
+                }
+            },
+            { $sort: { "_id": 1 } }
+        ]);
+    
+        // Chuẩn hóa dữ liệu trả về với doanh thu mặc định là 0 cho các ngày không có doanh thu
+        const daysOfWeek = ["Chủ Nhật", "Thứ Hai", "Thứ Ba", "Thứ Tư", "Thứ Năm", "Thứ Sáu", "Thứ Bảy"];
+        const formattedRevenue = Array.from({ length: 7 }, (_, index) => {
+            const dayRevenue = revenue.find(item => item._id === (index + 1)); // MongoDB: 1 = Chủ Nhật, 2 = Thứ Hai,...
+            return {
+                day: daysOfWeek[index],
+                totalRevenue: dayRevenue ? dayRevenue.totalRevenue : 0
+            };
+        });
+    
+        return formattedRevenue;
+    },
   
   // Lấy doanh thu theo tháng cho từng cửa hàng
   async getMonthlyRevenue(storeId) {
-    const startOfMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
-    startOfMonth.setHours(0, 0, 0, 0); 
+    const startOfYear = new Date(new Date().getFullYear(), 0, 1); // Ngày đầu tiên của năm
+    startOfYear.setHours(0, 0, 0, 0);
 
-    const endOfMonth = new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0);
-    endOfMonth.setHours(23, 59, 59, 999); // Đặt thời gian cuối ngày
-    console.log(storeId)
-    console.log(startOfMonth,endOfMonth)
+    const endOfYear = new Date(new Date().getFullYear(), 11, 31); // Ngày cuối cùng của năm
+    endOfYear.setHours(23, 59, 59, 999);
+
     const revenue = await Order.aggregate([
-      {
-        $match: {
-          storeId: new mongoose.Types.ObjectId(storeId),
-          createdAt: { $gte: startOfMonth, $lte: endOfMonth },
-          status: 'Hoàn thành'
-        }
-      },
-      {
-        $group: {
-          _id: { $dayOfMonth: "$createdAt" },
-          totalRevenue: { $sum: "$totalPrice" }
-        }
-      },
-      { $sort: { "_id": 1 } }
+        {
+            $match: {
+                storeId: new mongoose.Types.ObjectId(storeId),
+                createdAt: { $gte: startOfYear, $lte: endOfYear },
+                status: 'Hoàn thành'
+            }
+        },
+        {
+            $group: {
+                _id: { $month: "$createdAt" }, // Lấy tháng từ `createdAt`
+                totalRevenue: { $sum: "$totalPrice" }
+            }
+        },
+        { $sort: { "_id": 1 } }
     ]);
-  
-    return revenue;
-  },
-  
+
+    // Chuẩn hóa dữ liệu trả về với doanh thu mặc định là 0 cho các tháng không có doanh thu
+    const formattedRevenue = Array.from({ length: 12 }, (_, index) => {
+        const monthRevenue = revenue.find(item => item._id === index + 1); // MongoDB: Tháng bắt đầu từ 1
+        return {
+            month: index + 1, // Tháng 1, 2, ..., 12
+            totalRevenue: monthRevenue ? monthRevenue.totalRevenue : 0
+        };
+    });
+
+    return formattedRevenue;
+},
   // Lấy doanh thu theo năm cho từng cửa hàng
-  async getYearlyRevenue(storeId) {
-    const startOfYear = new Date(new Date().getFullYear(), 0, 1);
-    const endOfYear = new Date(new Date().getFullYear() + 1, 0, 0);
-  
+  async getDailyRevenue(storeId) {
+    const startOfDay = new Date();
+    startOfDay.setHours(0, 0, 0, 0); // Đặt thời gian bắt đầu ngày (0h00)
+    
+    const endOfDay = new Date();
+    endOfDay.setHours(23, 59, 59, 999); // Đặt thời gian kết thúc ngày (23h59)
+
     const revenue = await Order.aggregate([
-      {
-        $match: {
-          storeId: new mongoose.Types.ObjectId(storeId),
-          createdAt: { $gte: startOfYear, $lte: endOfYear },
-          status: 'Hoàn thành'
-        }
-      },
-      {
-        $group: {
-          _id: { $month: "$createdAt" },
-          totalRevenue: { $sum: "$totalPrice" }
-        }
-      },
-      { $sort: { "_id": 1 } }
+        {
+            $match: {
+                storeId: new mongoose.Types.ObjectId(storeId),
+                createdAt: { $gte: startOfDay, $lte: endOfDay },
+                status: 'Hoàn thành',
+            },
+        },
+        {
+            $group: {
+                _id: { $hour: "$createdAt" }, // Nhóm theo giờ
+                totalRevenue: { $sum: "$totalPrice" },
+            },
+        },
+        { $sort: { "_id": 1 } }, // Sắp xếp theo giờ tăng dần
     ]);
-  
-    return revenue;
-  }
+
+    // Chuẩn hóa dữ liệu trả về để đảm bảo đủ 24 giờ
+    const formattedRevenue = Array.from({ length: 24 }, (_, hour) => {
+        const hourRevenue = revenue.find(item => item._id === hour);
+        return {
+            hour, // Giờ trong ngày (0-23)
+            totalRevenue: hourRevenue ? hourRevenue.totalRevenue : 0,
+        };
+    });
+
+    return formattedRevenue;
+}
   
 };
