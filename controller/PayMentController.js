@@ -2,6 +2,9 @@
 const paymentService = require('../services/paymentservice');
 const dotenv = require('dotenv');
 dotenv.config();
+const { Pointer } = require("pointer-wallet");
+const pointerPayment = new Pointer(process.env.POINTER_SECRET_KEY);
+
 
     const createPayment = async (req, res) => {
         const { amount, currency, message, userID, orderID, returnUrl, orders } = req.body;
