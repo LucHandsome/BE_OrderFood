@@ -23,16 +23,16 @@ dotenv.config();
         }
     };   
     
-    const connectWallet = async (req, res) => {
-        const {userId} = req.body
-        const connectUrl = await paymentService.connectWallet(userId)
-        return connectUrl
-    }
+    // const connectWallet = async (req, res) => {
+    //     const {userId} = req.body
+    //     const connectUrl = await paymentService.connectWallet(userId)
+    //     return connectUrl
+    // }
     const handleWebhookConnectWallet = async(req, res) => {
         const { status,email,signature,userId } = req.body
         if(status === 200){
             const accWallet = paymentService.createConnectWallet(userId,email,signature)
-            return accWallet
+            res.status(200).json({ message: 'Connect Wallet successfully', accWallet, userId: accWallet._id });
         }
     }
     // Hàm để xử lý webhook
@@ -74,7 +74,7 @@ dotenv.config();
 module.exports = {
     createPayment,
     handleWebhook,
-    connectWallet,
+    // connectWallet,
     handleWebhookConnectWallet,
     refund,
     handleWebhookRefund

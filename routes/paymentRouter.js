@@ -27,7 +27,7 @@ router.get('/payment-status/:orderId', async (req, res) => {
         res.status(500).send('Internal Server Error');
     }
 });
-router.post('/wallet-connect/:userId', paymentController.connectWallet);
+// router.post('/wallet-connect/:userId', paymentController.connectWallet);
 router.post('/connect-status', paymentController.handleWebhookConnectWallet);
 router.post('/refund-money/:orderId', paymentController.refund);
 router.post('/refund-status', paymentController.handleWebhookRefund);

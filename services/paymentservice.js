@@ -57,17 +57,17 @@ const { addYears } = require('date-fns');
             throw new Error(error.message);
         }
     }
-    const connectWallet = async(userId) => {
-        try {
-            const partnerId = '66a78d1bc49d6f5b6a59e303'
-            const returnUrl= 'http://localhost:1306/pointer-wallet'
-            const res = `https://pointer.io.vn/connect-app?partnerId=${partnerId}&returnUrl=${returnUrl}&userId=${userId}`
-            return res
-        } catch (error) {
-            console.error('Error updating order status:', error);
-            throw new Error(error.message);
-        }
-    }
+    // const connectWallet = async(userId) => {
+    //     try {
+    //         const partnerId = '66a78d1bc49d6f5b6a59e303'
+    //         const returnUrl= 'http://localhost:1306/pointer-wallet'
+    //         const res = `https://pointer.io.vn/connect-app?partnerId=${partnerId}&returnUrl=${returnUrl}&userId=${userId}`
+    //         return res
+    //     } catch (error) {
+    //         console.error('Error updating order status:', error);
+    //         throw new Error(error.message);
+    //     }
+    // }
     const createConnectWallet = async(userId,email,signature) => {
         let wallet = await accWallet.findOne({ email });
         if (!wallet) {
@@ -115,7 +115,7 @@ const { addYears } = require('date-fns');
 module.exports = {
     createOrder,
     updateOrderStatus,
-    connectWallet,
+    // connectWallet,
     createConnectWallet,
     refund,
     updateStatusRefund,
