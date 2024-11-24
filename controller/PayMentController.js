@@ -26,7 +26,7 @@ dotenv.config();
     const connectWallet = async (req, res) => {
         const {userId} = req.body
         const connectUrl = await paymentService.connectWallet(userId)
-        res.status(200).json({ url: connectUrl });
+        return connectUrl
     }
     const handleWebhookConnectWallet = async(req, res) => {
         const { status,email,signature,userId } = req.body

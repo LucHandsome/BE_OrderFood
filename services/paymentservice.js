@@ -60,11 +60,8 @@ const { addYears } = require('date-fns');
     const connectWallet = async(userId) => {
         try {
             const partnerId = '66a78d1bc49d6f5b6a59e303'
-            const res = await pointerPayment.connectedPayment({
-                userId,
-                partnerId,
-                returnUrl: 'http://localhost:1306/pointer-wallet'
-            })
+            const returnUrl= 'http://localhost:1306/pointer-wallet'
+            const res = `https://pointer.io.vn/connect-app?partnerId=${partnerId}&returnUrl=${returnUrl}&userId=${userId}`
             return res
         } catch (error) {
             console.error('Error updating order status:', error);
