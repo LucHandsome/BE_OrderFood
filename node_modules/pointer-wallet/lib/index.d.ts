@@ -1,8 +1,11 @@
-import { createOrderDto, resCancelOrderDto, resCreateOrderDto } from "./types";
+import { connectedPaymentDto, createOrderDto, resCancelOrderDto, resCreateOrderDto, withdrawMoneyDto } from "./types";
 export declare class Pointer {
     private secretKey;
     private instance;
     constructor(secretKey: string);
     createPayment: (body: createOrderDto) => Promise<resCreateOrderDto>;
     cancelOrder: (transactionID: string) => Promise<resCancelOrderDto>;
+    refundMoney: (orderID: string) => Promise<any>;
+    withdrawMoney: (body: withdrawMoneyDto) => Promise<any>;
+    connectedPayment: (body: connectedPaymentDto) => Promise<any>;
 }

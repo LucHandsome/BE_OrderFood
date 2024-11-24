@@ -1,6 +1,7 @@
 // paymentService.js
 
 const Order = require('../models/Order'); // Adjust the path as needed
+const accWallet = require('../models/connectWallet')
 const { Pointer } = require("pointer-wallet");
 const dotenv = require('dotenv');
 dotenv.config();
@@ -56,18 +57,33 @@ const { addYears } = require('date-fns');
             throw new Error(error.message);
         }
     }
-    const refund = async(orderID) => {
+    const connectWallet = async() => {
         try {
-            const res = await Pointer.createPayment
+            const partnerId = '66a78d1bc49d6f5b6a59e303'
+            const res = await Pointer.connectedPayment({
+                partnerId,
+                returnUrl: 'http://localhost:3002/pointer-wallet'
+            })
             return res
         } catch (error) {
             console.error('Error updating order status:', error);
             throw new Error(error.message);
         }
     }
-
+    const createConnectWallet = async(email,signature) => {
+        let wallet = await accWallet.findOne({ email });
+        if (!wallet) {
+            // Create a new user if one doesn't exist
+            wallet = await accWallet.create({ email,signature });
+            console.log("New accWallet created:", wallet); // Log newly created user
+        } else {
+            console.log("User found:", user); // Log existing user
+        }
+        return wallet;
+    }
 module.exports = {
     createOrder,
     updateOrderStatus,
-    refund
+    connectWallet,
+    createConnectWallet
 };

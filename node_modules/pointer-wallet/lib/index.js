@@ -16,7 +16,7 @@ class Pointer {
         this.createPayment = (body) => __awaiter(this, void 0, void 0, function* () {
             var _a;
             try {
-                const response = yield this.instance.post("/api/payment/create-order", body);
+                const response = yield this.instance.post("/create-order", body);
                 return response.data;
             }
             catch (error) {
@@ -28,7 +28,7 @@ class Pointer {
         });
         this.cancelOrder = (transactionID) => __awaiter(this, void 0, void 0, function* () {
             try {
-                const response = yield this.instance.post("/api/payment/cancel-order", {
+                const response = yield this.instance.post("/cancel-order", {
                     transactionID,
                 });
                 return response.data;
@@ -37,13 +37,41 @@ class Pointer {
                 throw new Error(error.response.data.message);
             }
         });
+        this.refundMoney = (orderID) => __awaiter(this, void 0, void 0, function* () {
+            try {
+                const response = yield this.instance.post("/refund", {
+                    orderID,
+                });
+                return response.data;
+            }
+            catch (error) { }
+        });
+        this.withdrawMoney = (body) => __awaiter(this, void 0, void 0, function* () {
+            try {
+                const response = yield this.instance.post("/withdraw", {
+                    body,
+                });
+                return response.data;
+            }
+            catch (error) { }
+        });
+        this.connectedPayment = (body) => __awaiter(this, void 0, void 0, function* () {
+            try {
+                const response = yield this.instance.post("/connect-wallet/payment", {
+                    body,
+                });
+                return response.data;
+            }
+            catch (error) { }
+        });
         this.secretKey = secretKey;
         this.instance = axios_1.default.create({
-            baseURL: "https://api.pointer.io.vn",
+            baseURL: "https://api.pointer.io.vn/api/payment",
             timeout: 10000,
             headers: {
                 Authorization: `Bearer ${this.secretKey}`,
             },
+            withCredentials: false,
         });
     }
 }

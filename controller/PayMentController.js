@@ -23,6 +23,17 @@ dotenv.config();
         }
     };   
     
+    const connectWallet = async () => {
+        const res = await paymentService.connectWallet()
+        return res.returnUrl
+    }
+    const handleWebhookConnectWallet = async(req, res) => {
+        const { email,signature } = req.body
+        if(res.status(200)){
+            const accWallet = paymentService.createConnectWallet(email,signature)
+            return accWallet
+        }
+    }
     // Hàm để xử lý webhook
     const handleWebhook = async(req, res) => {
         const { status, orderID } = req.body; 
@@ -44,5 +55,7 @@ dotenv.config();
     
 module.exports = {
     createPayment,
-    handleWebhook
+    handleWebhook,
+    connectWallet,
+    handleWebhookConnectWallet
 };

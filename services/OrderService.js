@@ -440,6 +440,11 @@ module.exports = {
         endOfWeek.setDate(startOfWeek.getDate() + 6); // Chủ Nhật
         endOfWeek.setHours(23, 59, 59, 999);
     
+        // const startOfWeek = startOfWeek(new Date()); // Bắt đầu tuần này
+        // const endOfWeek = endOfWeek(new Date()); // Kết thúc tuần này
+        console.log(startOfWeek)
+        console.log(endOfWeek)
+
         const revenue = await Order.aggregate([
             {
                 $match: {
