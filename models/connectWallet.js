@@ -1,6 +1,11 @@
 const mongoose = require('mongoose');
 
 const connectWalletSchema = new mongoose.Schema({
+    customerId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
+        required: true
+    },
     email : { type: String, required: true },
     signature: {type: String, required: true}
 });

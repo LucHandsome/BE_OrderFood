@@ -57,12 +57,13 @@ const { addYears } = require('date-fns');
             throw new Error(error.message);
         }
     }
-    const connectWallet = async() => {
+    const connectWallet = async(userId) => {
         try {
             const partnerId = '66a78d1bc49d6f5b6a59e303'
             const res = await Pointer.connectedPayment({
+                userId,
                 partnerId,
-                returnUrl: 'http://localhost:3002/pointer-wallet'
+                returnUrl: 'http://localhost:1306/pointer-wallet'
             })
             return res
         } catch (error) {
@@ -70,11 +71,11 @@ const { addYears } = require('date-fns');
             throw new Error(error.message);
         }
     }
-    const createConnectWallet = async(email,signature) => {
+    const createConnectWallet = async(userId,email,signature) => {
         let wallet = await accWallet.findOne({ email });
         if (!wallet) {
             // Create a new user if one doesn't exist
-            wallet = await accWallet.create({ email,signature });
+            wallet = await accWallet.create({ userId,email,signature });
             console.log("New accWallet created:", wallet); // Log newly created user
         } else {
             console.log("User found:", user); // Log existing user

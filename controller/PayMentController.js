@@ -23,14 +23,15 @@ dotenv.config();
         }
     };   
     
-    const connectWallet = async () => {
-        const res = await paymentService.connectWallet()
-        return res.returnUrl
+    const connectWallet = async (req, res) => {
+        const {userId} = req.body
+        const connectUrl = await paymentService.connectWallet(userId)
+        res.status(200).json({ url: connectUrl });
     }
     const handleWebhookConnectWallet = async(req, res) => {
-        const { email,signature } = req.body
-        if(res.status(200)){
-            const accWallet = paymentService.createConnectWallet(email,signature)
+        const { status,email,signature,userId } = req.body
+        if(status === 200){
+            const accWallet = paymentService.createConnectWallet(userId,email,signature)
             return accWallet
         }
     }
