@@ -56,8 +56,7 @@ dotenv.config();
     const refund = async(req, res) => {
         const {orderId} = req.params
         console.log(orderId)
-        const response = await paymentService.refund(orderId);
-        return response
+        await paymentService.refund(orderId);
     }
     const handleWebhookRefund =async (req, res) => {
         const {status,orderID} = req.body;

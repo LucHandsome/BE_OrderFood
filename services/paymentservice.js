@@ -82,9 +82,10 @@ const { addYears } = require('date-fns');
         }
         return wallet;
     }
-    const refund = async(orderID) => {
-        const res = await pointerPayment.refundMoney(orderID)
-        return res
+    const refund = async(orderId) => {
+        await pointerPayment.refundMoney({
+            orderID: orderId
+        })
     }
     const updateStatusRefund = async(orderID) => {
         try {
