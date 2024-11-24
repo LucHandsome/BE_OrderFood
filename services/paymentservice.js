@@ -68,11 +68,11 @@ const { addYears } = require('date-fns');
     //         throw new Error(error.message);
     //     }
     // }
-    const createConnectWallet = async(userId,email,signature) => {
-        let wallet = await accWallet.findOne({ email });
+    const createConnectWallet = async(userId,signature) => {
+        let wallet = await accWallet.findOne({ userId });
         if (!wallet) {
             // Create a new user if one doesn't exist
-            wallet = await accWallet.create({ userId,email,signature });
+            wallet = await accWallet.create({ userId,signature });
             console.log("New accWallet created:", wallet); // Log newly created user
         } else {
             console.log("User found:", user); // Log existing user

@@ -32,9 +32,10 @@ const pointerPayment = new Pointer(process.env.POINTER_SECRET_KEY);
     //     return connectUrl
     // }
     const handleWebhookConnectWallet = async(req, res) => {
-        const { status,email,signature,userId } = req.body
+        const { status,signature,userID } = req.body
+        console.log("User Id : "+userID)
         if(status === 200){
-            const accWallet = paymentService.createConnectWallet(userId,email,signature)
+            const accWallet = paymentService.createConnectWallet(userID,signature)
             res.status(200).json({ message: 'Connect Wallet successfully', accWallet, userId: accWallet._id });
         }
     }
