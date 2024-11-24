@@ -29,6 +29,7 @@ router.get('/payment-status/:orderId', async (req, res) => {
 });
 router.post('/wallet-connect/:userId', paymentController.connectWallet);
 router.post('/connect-status', paymentController.handleWebhookConnectWallet);
-  
+router.post('/refund-money/:orderId', paymentController.refund);
+router.post('/refund-status', paymentController.handleWebhookRefund);
 
 module.exports = router;

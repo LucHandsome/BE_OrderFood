@@ -60,7 +60,7 @@ const { addYears } = require('date-fns');
     const connectWallet = async(userId) => {
         try {
             const partnerId = '66a78d1bc49d6f5b6a59e303'
-            const res = await Pointer.connectedPayment({
+            const res = await pointerPayment.connectedPayment({
                 userId,
                 partnerId,
                 returnUrl: 'http://localhost:1306/pointer-wallet'
@@ -82,9 +82,44 @@ const { addYears } = require('date-fns');
         }
         return wallet;
     }
+    const refund = async(orderID) => {
+        const res = await pointerPayment.refundMoney(orderID)
+        return res
+    }
+    const updateStatusRefund = async(orderID) => {
+        try {
+            // Update the order status in the database
+            const result = await Order.findByIdAndUpdate(orderID, { hasRefund: true }, { new: true });
+            
+            if (!result) {
+                throw new Error('Order not found');
+            }
+            return result; // Trả về đơn hàng đã cập nhật
+        } catch (error) {
+            console.error('Error updating order status:', error);
+            throw new Error(error.message);
+        }
+    }
+    const updateCancleStatus = async(orderID) => {
+        try {
+            // Update the order status in the database
+            const result = await Order.findByIdAndUpdate(orderID, { paymentStatus: "Đã hủy" }, { new: true });
+            
+            if (!result) {
+                throw new Error('Order not found');
+            }
+            return result; // Trả về đơn hàng đã cập nhật
+        } catch (error) {
+            console.error('Error updating order status:', error);
+            throw new Error(error.message);
+        }
+    }
 module.exports = {
     createOrder,
     updateOrderStatus,
     connectWallet,
-    createConnectWallet
+    createConnectWallet,
+    refund,
+    updateStatusRefund,
+    updateCancleStatus
 };

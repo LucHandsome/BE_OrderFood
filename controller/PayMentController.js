@@ -53,10 +53,30 @@ dotenv.config();
             return res.status(400).json({ status: status, orderID }); 
         }
     }
-    
+    const refund = async(req, res) => {
+        const {orderId} = req.params
+        console.log(orderId)
+        const response = await paymentService.refund(orderId);
+        return response
+    }
+    const handleWebhookRefund =async (req, res) => {
+        const {status,orderID} = req.body;
+        if(status === 200){
+            const updateResult = await paymentService.updateStatusRefund(orderID);
+            await paymentService.updateOrderStatus(orderID)
+            if (!updateResult) {
+                console.error(`Order ID ${orderID} not found`);
+                return res.status(404).send('Order not found'); 
+            }
+            console.log(`Payment successful for order ID: ${orderID}`);
+            return res.status(200).json({ status: 200, orderID });
+        }
+    }
 module.exports = {
     createPayment,
     handleWebhook,
     connectWallet,
-    handleWebhookConnectWallet
+    handleWebhookConnectWallet,
+    refund,
+    handleWebhookRefund
 };

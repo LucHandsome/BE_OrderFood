@@ -80,7 +80,8 @@ const orderSchema = new Schema({
         ref: 'Driver',
         default: null
     },
-    hasRated: { type: Boolean, default: false }
+    hasRated: { type: Boolean, default: false },
+    hasRefund: { type: Boolean, default:false, required: false}
 }, {
     timestamps: true
 });
