@@ -219,7 +219,14 @@ const axiosInstance = axios.create({
     "Content-Type": "application/json",
   },
 });
-
+const getAllUsers = async () => {
+    try {
+        const users = await User.find(); // Lấy tất cả thông tin cửa hàng
+        return users;
+    } catch (error) {
+        throw new Error('Error fetching all users: ' + error.message);
+    }
+};
 module.exports = {
     getUserProfile,
     findOrCreateUser,
@@ -229,6 +236,7 @@ module.exports = {
     verifyOtp,
     updateUserProfile,
     getUserProfileFromDB,
+    getAllUsers,
     async isTokenExpired(token) {
         try {
           const decoded = jwtDecode(token);

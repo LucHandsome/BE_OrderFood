@@ -27,5 +27,25 @@ router.get('/payment-status/:orderId', async (req, res) => {
         res.status(500).send('Internal Server Error');
     }
 });
+router.post('/wallet-connect', async (req, res) => {
+    try {
+      const { partnerId, returnUrl } = req.body;
+  
+      // Kiểm tra đối tác hợp lệ
+      const partner = await db.Partners.findOne({ where: { id: partnerId } });
+      if (!partner) {
+        return res.status(400).json({ message: 'Invalid partnerId' });
+      }
+  
+      // Tạo URL chuyển hướng đến Pointer System
+      const pointerUrl = `https://pointer-system.com/connect?partnerId=${partnerId}&returnUrl=${encodeURIComponent(returnUrl)}`;
+  
+      res.status(200).json({ redirectUrl: pointerUrl });
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ message: 'Internal server error' });
+    }
+  });
+  
 
 module.exports = router;

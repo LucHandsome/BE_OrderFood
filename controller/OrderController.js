@@ -499,8 +499,28 @@ async getWeeklyRevenue(req, res) {
       const revenue = await orderService.getDailyRevenue(storeId);
       res.json(revenue);
     } catch (error) {
-      res.status(500).json({ error: 'Lỗi khi lấy doanh thu theo năm' });
+      res.status(500).json({ error: 'Lỗi khi lấy doanh thu theo ngày' });
     }
+  },
+  async getSumOrderDaily(req, res){
+    const { storeId } = req.params;
+    const sumOrder = await orderService.getSumOrderDaily(storeId);
+    res.json(sumOrder)
+  },
+  async getSumOrderWeek(req, res){
+    const { storeId } = req.params;
+    const sumOrder = await orderService.getSumOrderWeek(storeId);
+    res.json(sumOrder)
+  },
+  async getSumOrderMonth(req, res){
+    const { storeId } = req.params;
+    const sumOrder = await orderService.getSumOrderMonth(storeId);
+    res.json(sumOrder)
+  },
+  async getTop5Product(req, res){
+    const { storeId } = req.params;
+    const sumOrder = await orderService.getTop5Product(storeId);
+    res.json(sumOrder)
   }
   
 };

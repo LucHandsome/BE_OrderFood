@@ -3,7 +3,7 @@ const router = express.Router();
 const UserController = require('../controller/UserController');
 const {uploadUserImages} = require('../middleware/upload'); // Multer setup for file uploads
 
-
+router.get('/getAllUser', UserController.getAllUsers);
 router.post('/verify-otp', UserController.verifyOtp);
 router.post('/register', UserController.registerUser);
 router.post('/login', UserController.loginWithOtp);

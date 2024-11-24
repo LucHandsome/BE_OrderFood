@@ -167,6 +167,14 @@ const updateDriverDetails = async (driverId, updateData) => {
         throw new Error('Cập nhật thông tin tài xế thất bại');
     }
 };
+const getAllDrivers = async () => {
+    try {
+        const drivers = await Driver.find(); // Lấy tất cả thông tin cửa hàng
+        return drivers;
+    } catch (error) {
+        throw new Error('Error fetching all drivers: ' + error.message);
+    }
+};
 module.exports = {
     signUp,
     signIn,
@@ -174,6 +182,7 @@ module.exports = {
     getDriverById,
     findOrCreateDriver,
     updateDriverDetails,
+    getAllDrivers,
     async isTokenExpired(token) {
         try {
           const decoded = jwtDecode(token);

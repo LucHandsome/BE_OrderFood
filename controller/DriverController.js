@@ -79,12 +79,27 @@ const updateDriverDetails = async (req, res) => {
       res.status(500).json({ message: 'Cập nhật thông tin tài xế thất bại' });
     }
   };
-  
+  const getAllDrivers = async (req, res) => {
+    try {
+        const drivers = await driverService.getAllDrivers();
+        res.status(200).json({
+            status: 'OK',
+            message: 'Successfully fetched all drivers',
+            data: drivers,
+        });
+    } catch (error) {
+        res.status(500).json({
+            status: 'ERR',
+            message: error.message,
+        });
+    }
+};
 module.exports = {
     signUp,
     signIn,
     updateDriver,
     getDriverById,
     handleSSOCallbackDriver,
-    updateDriverDetails
+    updateDriverDetails,
+    getAllDrivers
 };

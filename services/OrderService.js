@@ -3,6 +3,9 @@ const Driver = require('../models/Driver');
 const { getIo } = require('../socket'); 
 const { removeCartItems } = require('../services/cartService');
 const mongoose = require('mongoose')
+const { startOfDay, subDays, isSameDay, format, startOfWeek, endOfWeek, subWeeks, startOfMonth, endOfMonth, subMonths, getISOWeek } = require('date-fns');
+const { utcToZonedTime } = require('date-fns-tz');
+const moment = require('moment-timezone'); // Sử dụng moment-timezone để xử lý múi giờ
 
 const createOrder = async (orderData) => {
     // Kiểm tra các trường bắt buộc trong deliveryInfo
@@ -399,78 +402,353 @@ module.exports = {
     
         return formattedRevenue;
     },
-  
-  // Lấy doanh thu theo tháng cho từng cửa hàng
-  async getMonthlyRevenue(storeId) {
-    const startOfYear = new Date(new Date().getFullYear(), 0, 1); // Ngày đầu tiên của năm
-    startOfYear.setHours(0, 0, 0, 0);
+    // Lấy doanh thu theo tháng cho từng cửa hàng
+    async getMonthlyRevenue(storeId) {
+        const startOfYear = new Date(new Date().getFullYear(), 0, 1); // Ngày đầu tiên của năm
+        startOfYear.setHours(0, 0, 0, 0);
 
-    const endOfYear = new Date(new Date().getFullYear(), 11, 31); // Ngày cuối cùng của năm
-    endOfYear.setHours(23, 59, 59, 999);
+        const endOfYear = new Date(new Date().getFullYear(), 11, 31); // Ngày cuối cùng của năm
+        endOfYear.setHours(23, 59, 59, 999);
 
-    const revenue = await Order.aggregate([
-        {
-            $match: {
-                storeId: new mongoose.Types.ObjectId(storeId),
-                createdAt: { $gte: startOfYear, $lte: endOfYear },
-                status: 'Hoàn thành'
-            }
-        },
-        {
-            $group: {
-                _id: { $month: "$createdAt" }, // Lấy tháng từ `createdAt`
-                totalRevenue: { $sum: "$totalPrice" }
-            }
-        },
-        { $sort: { "_id": 1 } }
-    ]);
-
-    // Chuẩn hóa dữ liệu trả về với doanh thu mặc định là 0 cho các tháng không có doanh thu
-    const formattedRevenue = Array.from({ length: 12 }, (_, index) => {
-        const monthRevenue = revenue.find(item => item._id === index + 1); // MongoDB: Tháng bắt đầu từ 1
-        return {
-            month: index + 1, // Tháng 1, 2, ..., 12
-            totalRevenue: monthRevenue ? monthRevenue.totalRevenue : 0
-        };
-    });
-
-    return formattedRevenue;
-},
-  // Lấy doanh thu theo năm cho từng cửa hàng
-  async getDailyRevenue(storeId) {
-    const startOfDay = new Date();
-    startOfDay.setHours(0, 0, 0, 0); // Đặt thời gian bắt đầu ngày (0h00)
-    
-    const endOfDay = new Date();
-    endOfDay.setHours(23, 59, 59, 999); // Đặt thời gian kết thúc ngày (23h59)
-
-    const revenue = await Order.aggregate([
-        {
-            $match: {
-                storeId: new mongoose.Types.ObjectId(storeId),
-                createdAt: { $gte: startOfDay, $lte: endOfDay },
-                status: 'Hoàn thành',
+        const revenue = await Order.aggregate([
+            {
+                $match: {
+                    storeId: new mongoose.Types.ObjectId(storeId),
+                    createdAt: { $gte: startOfYear, $lte: endOfYear },
+                    status: 'Hoàn thành'
+                }
             },
-        },
-        {
-            $group: {
-                _id: { $hour: "$createdAt" }, // Nhóm theo giờ
-                totalRevenue: { $sum: "$totalPrice" },
+            {
+                $group: {
+                    _id: { $month: "$createdAt" }, // Lấy tháng từ `createdAt`
+                    totalRevenue: { $sum: "$totalPrice" }
+                }
             },
-        },
-        { $sort: { "_id": 1 } }, // Sắp xếp theo giờ tăng dần
-    ]);
+            { $sort: { "_id": 1 } }
+        ]);
 
-    // Chuẩn hóa dữ liệu trả về để đảm bảo đủ 24 giờ
-    const formattedRevenue = Array.from({ length: 24 }, (_, hour) => {
-        const hourRevenue = revenue.find(item => item._id === hour);
-        return {
-            hour, // Giờ trong ngày (0-23)
-            totalRevenue: hourRevenue ? hourRevenue.totalRevenue : 0,
-        };
-    });
+        // Chuẩn hóa dữ liệu trả về với doanh thu mặc định là 0 cho các tháng không có doanh thu
+        const formattedRevenue = Array.from({ length: 12 }, (_, index) => {
+            const monthRevenue = revenue.find(item => item._id === index + 1); // MongoDB: Tháng bắt đầu từ 1
+            return {
+                month: index + 1, // Tháng 1, 2, ..., 12
+                totalRevenue: monthRevenue ? monthRevenue.totalRevenue : 0
+            };
+        });
 
-    return formattedRevenue;
-}
-  
+        return formattedRevenue;
+    },
+    // Lấy doanh thu theo năm cho từng cửa hàng
+    async getDailyRevenue(storeId) {
+        const startOfDay = new Date();
+        startOfDay.setHours(0, 0, 0, 0); // Đặt thời gian bắt đầu ngày (0h00)
+        
+        const endOfDay = new Date();
+        endOfDay.setHours(23, 59, 59, 999); // Đặt thời gian kết thúc ngày (23h59)
+
+        const revenue = await Order.aggregate([
+            {
+                $match: {
+                    storeId: new mongoose.Types.ObjectId(storeId),
+                    createdAt: { $gte: startOfDay, $lte: endOfDay },
+                    status: 'Hoàn thành',
+                },
+            },
+            {
+                $group: {
+                    _id: { $hour: "$createdAt" }, // Nhóm theo giờ
+                    totalRevenue: { $sum: "$totalPrice" },
+                },
+            },
+            { $sort: { "_id": 1 } }, // Sắp xếp theo giờ tăng dần
+        ]);
+
+        // Chuẩn hóa dữ liệu trả về để đảm bảo đủ 24 giờ
+        const formattedRevenue = Array.from({ length: 24 }, (_, hour) => {
+            const hourRevenue = revenue.find(item => item._id === hour);
+            return {
+                hour, // Giờ trong ngày (0-23)
+                totalRevenue: hourRevenue ? hourRevenue.totalRevenue : 0,
+            };
+        });
+
+        return formattedRevenue;
+    }, 
+    async getSumOrderDaily(storeId) {
+        const today = new Date();
+        const start = new Date(today);
+        start.setHours(0, 0, 0, 0); // Bắt đầu ngày hôm nay (00:00:00)
+        const end = new Date(today);
+        end.setHours(23, 59, 59, 999); // Kết thúc ngày hôm nay (23:59:59)
+
+        const yesterday = new Date(today);
+        yesterday.setDate(today.getDate() - 1); // Trừ 1 ngày từ hôm nay
+        const startYesterday = new Date(yesterday);
+        startYesterday.setHours(0, 0, 0, 0); // Bắt đầu ngày hôm qua (00:00:00)
+        const endYesterday = new Date(yesterday);
+        endYesterday.setHours(23, 59, 59, 999); // Kết thúc ngày hôm qua (23:59:59)
+
+        // Truy vấn tổng số đơn hàng và tính toán phần trăm thay đổi
+        const result = await Order.aggregate([
+            {
+                $match: {
+                    storeId: new mongoose.Types.ObjectId(storeId),
+                    status: { $in: ["Hoàn thành", "Đã hủy"] },
+                    createdAt: { $gte: startYesterday, $lt: end }, // Lọc đơn hàng trong 2 ngày
+                },
+            },
+            {
+                $group: {
+                    _id: {
+                        status: "$status",
+                        date: { $dateToString: { format: "%Y-%m-%d", date: "$createdAt" } }, // Nhóm theo trạng thái và ngày
+                    },
+                    count: { $sum: 1 },
+                },
+            },
+            {
+                $group: {
+                    _id: "$_id.status", // Nhóm lại theo trạng thái
+                    orders: {
+                        $push: { date: "$_id.date", count: "$count" }, // Lưu trữ các ngày và số lượng đơn hàng theo trạng thái
+                    },
+                },
+            },
+            {
+                $project: {
+                    _id: 0,
+                    status: "$_id", // Trả về trạng thái
+                    orders: 1, // Trả về orders
+                },
+            },
+        ]);
+
+        // Tạo một đối tượng với các trạng thái mặc định nếu không có dữ liệu
+        const statusData = ["Hoàn thành", "Đã hủy"];
+        const resultMap = result.reduce((acc, item) => {
+            acc[item.status] = item.orders;
+            return acc;
+        }, {});
+
+        // Đảm bảo cả "Hoàn thành" và "Đã hủy" đều có dữ liệu
+        statusData.forEach(status => {
+            if (!resultMap[status]) {
+                resultMap[status] = [];
+            }
+        });
+
+        // Xử lý dữ liệu và tính phần trăm thay đổi
+        const formattedResult = statusData.map(status => {
+            const orders = resultMap[status];
+            let thisDayCount = 0;
+            let lastDayCount = 0;
+
+            // Lặp qua các đơn hàng để tìm số lượng cho hôm nay và hôm qua
+            orders.forEach(o => {
+                const orderDate = new Date(o.date);
+                if (isSameDay(orderDate, today)) {
+                    thisDayCount = o.count;
+                }
+                if (isSameDay(orderDate, yesterday)) {
+                    lastDayCount = o.count;
+                }
+            });
+
+            // Tính phần trăm thay đổi
+            const percentageChange = lastDayCount === 0
+                ? thisDayCount > 0
+                    ? 100
+                    : 0
+                : ((thisDayCount - lastDayCount) / lastDayCount) * 100;
+
+            return {
+                status: status,
+                thisDayCount: thisDayCount,
+                lastDayCount: lastDayCount,
+                percentageChange: percentageChange.toFixed(2), // Làm tròn phần trăm
+            };
+        });
+
+        return formattedResult;
+    }
+    ,
+    async getSumOrderWeek(storeId) {
+        // Lấy ngày bắt đầu và kết thúc của tuần này và tuần trước
+        const startOfThisWeek = startOfWeek(new Date()); // Bắt đầu tuần này
+        const endOfThisWeek = endOfWeek(new Date()); // Kết thúc tuần này
+        const startOfLastWeek = startOfWeek(subWeeks(new Date(), 1)); // Bắt đầu tuần trước
+        const endOfLastWeek = endOfWeek(subWeeks(new Date(), 1)); // Kết thúc tuần trước
+
+        // Pipeline aggregate để lấy tổng số đơn hàng tuần này và tuần trước
+        const sumOrder = await Order.aggregate([
+            {
+                $match: {
+                    storeId: new mongoose.Types.ObjectId(storeId),
+                    status: { $in: ["Hoàn thành", "Đã hủy"] },
+                    createdAt: { $gte: startOfLastWeek, $lte: endOfThisWeek } // Lọc đơn hàng trong 2 tuần gần đây
+                },
+            },
+            {
+                $group: {
+                    _id: { status: "$status", week: { $isoWeek: "$createdAt" } }, // Nhóm theo trạng thái và tuần
+                    count: { $sum: 1 }
+                },
+            },
+            {
+                $group: {
+                    _id: "$_id.status", // Nhóm lại theo trạng thái
+                    orders: { 
+                        $push: { week: "$_id.week", count: "$count" } // Lưu trữ các tuần và số lượng đơn hàng theo trạng thái
+                    }
+                },
+            },
+            {
+                $project: {
+                    _id: 0,
+                    status: "$_id", // Trả về status
+                    orders: 1 // Trả về orders
+                },
+            },
+        ]);
+
+        // Tính phần trăm thay đổi
+        const result = sumOrder.map(order => {
+            let thisWeekCount = 0;
+            let lastWeekCount = 0;
+
+            // Lặp qua các đơn hàng để tìm số lượng cho tuần này và tuần trước
+            order.orders.forEach(o => {
+                if (o.week === getISOWeek(new Date())) { // So sánh tuần này
+                    thisWeekCount = o.count;
+                }
+                if (o.week === getISOWeek(subWeeks(new Date(), 1))) { // So sánh tuần trước
+                    lastWeekCount = o.count;
+                }
+            });
+
+            // Tính phần trăm thay đổi
+            const percentageChange = lastWeekCount === 0 
+                ? thisWeekCount > 0 ? 100 : 0
+                : ((thisWeekCount - lastWeekCount) / lastWeekCount) * 100;
+
+            return {
+                status: order.status,
+                thisWeekCount: thisWeekCount,
+                lastWeekCount: lastWeekCount,
+                percentageChange: percentageChange.toFixed(2), // Làm tròn phần trăm
+            };
+        });
+
+        return result;
+    }
+    ,
+    async getSumOrderMonth(storeId) {
+        // Lấy tháng này và tháng trước
+        const startOfThisMonth = startOfMonth(new Date()); // Bắt đầu tháng này
+        const endOfThisMonth = endOfMonth(new Date()); // Kết thúc tháng này
+        const startOfLastMonth = startOfMonth(subMonths(new Date(), 1)); // Bắt đầu tháng trước
+        const endOfLastMonth = endOfMonth(subMonths(new Date(), 1)); // Kết thúc tháng trước
+
+        const sumOrder = await Order.aggregate([
+            {
+                $match: {
+                    storeId: new mongoose.Types.ObjectId(storeId),
+                    status: { $in: ["Hoàn thành", "Đã hủy"] },
+                    createdAt: { $gte: startOfLastMonth } // Lọc tất cả đơn hàng trong 2 tháng gần đây
+                },
+            },
+            {
+                $group: {
+                    _id: { status: "$status", month: { $month: "$createdAt" } }, // Nhóm theo trạng thái và tháng
+                    count: { $sum: 1 }
+                },
+            },
+            {
+                $group: {
+                    _id: "$_id.status", // Nhóm lại theo trạng thái
+                    orders: { 
+                        $push: { month: "$_id.month", count: "$count" } // Lưu trữ các tháng và số lượng đơn hàng theo trạng thái
+                    }
+                },
+            },
+            {
+                $project: {
+                    _id: 0,
+                    status: "$_id", // Trả về status
+                    orders: 1 // Trả về orders
+                },
+            },
+        ]);
+
+        // Tính phần trăm thay đổi
+        const result = sumOrder.map(order => {
+            let thisMonthCount = 0;
+            let lastMonthCount = 0;
+
+            // Lặp qua các đơn hàng để tìm số lượng cho tháng này và tháng trước
+            order.orders.forEach(o => {
+                if (o.month === startOfThisMonth.getMonth() + 1) { // Lưu ý rằng tháng bắt đầu từ 0
+                    thisMonthCount = o.count;
+                }
+                if (o.month === startOfLastMonth.getMonth() + 1) {
+                    lastMonthCount = o.count;
+                }
+            });
+
+            // Tính phần trăm thay đổi
+            const percentageChange = lastMonthCount === 0 
+                ? thisMonthCount > 0 ? 100 : 0
+                : ((thisMonthCount - lastMonthCount) / lastMonthCount) * 100;
+
+            return {
+                status: order.status,
+                thisMonthCount: thisMonthCount,
+                lastMonthCount: lastMonthCount,
+                percentageChange: percentageChange.toFixed(2), // Làm tròn phần trăm
+            };
+        });
+
+        return result;
+    }
+    ,
+    async getTop5Product(storeId){
+        const start = startOfMonth(new Date()); // Bắt đầu tháng này
+        const end = endOfMonth(new Date()); // Kết thúc tháng này
+
+        const result = await Order.aggregate([
+            {
+              $match: {
+                storeId: new mongoose.Types.ObjectId(storeId), // Lọc theo storeId
+                status: 'Hoàn thành', 
+                createdAt: { $gte: start, $lt: end }, // Lọc theo khoảng thời gian
+              },
+            },
+            {
+              $unwind: "$cart", // Tách các sản phẩm trong giỏ hàng
+            },
+            {
+              $group: {
+                _id: "$cart.productId", // Nhóm theo productId
+                name: { $first: "$cart.name" }, // Lấy tên sản phẩm đầu tiên
+                photo: { $first: "$cart.image"},
+                price: { $first: "$cart.price"},
+                totalSold: { $sum: "$cart.quantity" }, // Tổng số lượng bán
+              },
+            },
+            {
+              $sort: { totalSold: -1 }, // Sắp xếp giảm dần theo số lượng bán
+            },
+            {
+              $facet: {
+                topProducts: [{ $limit: 5 }], // Lấy 5 sản phẩm bán chạy nhất
+                others: [
+                  { $skip: 5 },
+                  { $group: { _id: "Other", totalSold: { $sum: "$totalSold" } } }, // Gộp các sản phẩm còn lại
+                ],
+              },
+            },
+          ]);
+                            
+        return result;
+    }
 };

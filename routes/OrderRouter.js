@@ -34,4 +34,10 @@ router.post('/presspay/callback', orderController.handlePressPayCallback);
 router.get('/revenue/weekly/:storeId', orderController.getWeeklyRevenue);
 router.get('/revenue/monthly/:storeId', orderController.getMonthlyRevenue);
 router.get('/revenue/daily/:storeId', orderController.getDailyRevenue);
+router.get('/order-of-day/:storeId',orderController.getSumOrderDaily)
+router.get('/order-of-week/:storeId',orderController.getSumOrderWeek)
+router.get('/order-of-month/:storeId',orderController.getSumOrderMonth)
+router.get('/top-5-product/:storeId',orderController.getTop5Product)
+
+
 module.exports = router;

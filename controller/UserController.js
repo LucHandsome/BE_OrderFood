@@ -175,6 +175,22 @@ const getUserProfileFromDB = async (req, res) => {
         res.status(500).json({ error: 'Lỗi lấy thông tin người dùng' });
       }
 };
+
+const getAllUsers = async (req, res) => {
+    try {
+        const users = await userService.getAllUsers();
+        res.status(200).json({
+            status: 'OK',
+            message: 'Successfully fetched all users',
+            data: users,
+        });
+    } catch (error) {
+        res.status(500).json({
+            status: 'ERR',
+            message: error.message,
+        });
+    }
+};
 module.exports = {
     handleSSOCallback,
     registerUser,
@@ -183,5 +199,6 @@ module.exports = {
     loginWithOtp,
     verifyOtp,
     updateUserProfile,
-    getUserProfileFromDB
+    getUserProfileFromDB,
+    getAllUsers
 }
