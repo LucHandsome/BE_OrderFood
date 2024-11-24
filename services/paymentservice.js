@@ -6,6 +6,7 @@ const dotenv = require('dotenv');
 dotenv.config();
 const pointerPayment = new Pointer(process.env.POINTER_SECRET_KEY);
 const axios = require('axios');
+const { addYears } = require('date-fns');
 
     const createOrder = async(amount, currency, message, userID, orderID, returnUrl, orders) => {
         if (!amount || !currency || !userID || !orderID || !returnUrl || !orders) {
@@ -55,8 +56,18 @@ const axios = require('axios');
             throw new Error(error.message);
         }
     }
+    const refund = async(orderID) => {
+        try {
+            const res = await Pointer.createPayment
+            return res
+        } catch (error) {
+            console.error('Error updating order status:', error);
+            throw new Error(error.message);
+        }
+    }
 
 module.exports = {
     createOrder,
-    updateOrderStatus
+    updateOrderStatus,
+    refund
 };

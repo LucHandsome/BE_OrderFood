@@ -340,6 +340,71 @@ const getOrderById = async (id) => {
         throw new Error(error.message);
     }
 }
+const getAllOrders = async (page = 1, limit = 10) => {
+    try {
+        // Tính toán số lượng đơn hàng cần bỏ qua
+        const skip = (page - 1) * limit;
+
+        // Lấy dữ liệu đơn hàng từ MongoDB
+        const orders = await Order.find()
+            .skip(skip)
+            .limit(limit);
+
+        // Trả về kết quả
+        return orders;
+    } catch (error) {
+        console.error('Lỗi khi lấy đơn hàng:', error);
+        throw new Error('Không thể lấy dữ liệu đơn hàng');
+    }
+};
+const getOrderStatusCounts = async () => {
+    try {
+        // Lấy tất cả đơn hàng và đảm bảo giá trị `status` tồn tại
+        const orders = await Order.find({}, 'status');
+        
+        // Khởi tạo bộ đếm
+        const statusCounts = {
+            new: 0,
+            processing: 0,
+            delivering: 0,
+            completed: 0,
+            canceled: 0,
+        };
+
+        // Đếm số lượng từng trạng thái
+        orders.forEach((order) => {
+            switch (order.status) {
+                case 'Chờ xác nhận':
+                    statusCounts.new += 1;
+                    break;
+                case 'Cửa hàng xác nhận':
+                case 'Đang tìm tài xế':
+                case 'Đã tìm thấy tài xế':
+                case 'Chờ lấy hàng':
+                    statusCounts.processing += 1;
+                    break;
+                case 'Đang giao':
+                    statusCounts.delivering += 1;
+                    break;
+                case 'Hoàn thành':
+                    statusCounts.completed += 1;
+                    break;
+                case 'Đã hủy':
+                    statusCounts.canceled += 1;
+                    break;
+                default:
+                    console.warn(`Trạng thái không xác định: ${order.status}`);
+            }
+        });
+
+        return statusCounts;
+    } catch (error) {
+        console.error("Lỗi khi lấy số lượng trạng thái đơn hàng:", error);
+        throw new Error("Không thể lấy số lượng trạng thái đơn hàng.");
+    }
+};
+
+
 module.exports = {
     createOrder,
     getPendingOrders,
@@ -362,6 +427,8 @@ module.exports = {
     getOrdersByDriverId,
     takeOrder,
     shipOrder,
+    getAllOrders,
+    getOrderStatusCounts,
     // Lấy doanh thu theo tuần (Thứ Hai - Chủ Nhật)
     // Lấy doanh thu theo tuần cho từng cửa hàng
     async getWeeklyRevenue(storeId) {

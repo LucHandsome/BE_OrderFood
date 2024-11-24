@@ -1,7 +1,7 @@
 const orderService = require('../services/OrderService');
 const Order = require('../models/Order')
 const Driver = require('../models/Driver')
-
+const redisClient = require("../redisClient")
 const paymentService = require('../services/paymentservice')
 
 const createOrder = async (req, res) => {
@@ -445,6 +445,49 @@ const getOrderStatus = async (req, res) => {
         res.status(500).json({ message: error.message });
     }
 }
+// const getAllOrder = async (req, res) => {
+//     try {
+//       // Kiểm tra dữ liệu đã được cache trong Redis chưa
+//       const cachedOrders = await redisClient.get("allOrders");
+  
+//       if (cachedOrders) {
+//         console.log("Fetching from cache...");
+//         // Dữ liệu đã được cache, trả về dữ liệu từ Redis
+//         return res.status(200).json(JSON.parse(cachedOrders));
+//       }
+  
+//       console.log("Fetching from database...");
+//       // Nếu chưa có dữ liệu trong Redis, lấy từ MongoDB
+//       const orders = await Order.find();
+  
+//       // Lưu dữ liệu vào Redis với thời gian hết hạn là 10 phút (600 giây)
+//       await redisClient.set("allOrders", JSON.stringify(orders), {
+//         EX: 600, // Expiration time in seconds
+//       });
+  
+//       // Trả về dữ liệu từ MongoDB
+//       return res.status(200).json(orders);
+//     } catch (error) {
+//       console.error("Error fetching orders:", error);
+//       return res.status(500).json({ message: "Internal server error" });
+//     }
+//   };
+
+const getAllOrders = async (req, res) => {
+    const { page, limit } = req.query;
+
+    try {
+        // Gọi service để lấy đơn hàng
+        const orders = await orderService.getAllOrders(parseInt(page), parseInt(limit));
+
+        // Trả về kết quả cho client
+        res.status(200).json(orders);
+    } catch (error) {
+        console.error('Lỗi khi lấy đơn hàng:', error);
+        res.status(500).json({ message: error.message });
+    }
+};
+
 module.exports = {
     createOrder,
     getPendingOrders,
@@ -469,6 +512,7 @@ module.exports = {
     getOrdersByDriverId,
     takeOrder,
     shipOrder,
+    getAllOrders,
     // Lấy doanh thu theo tuần cho cửa hàng
 async getWeeklyRevenue(req, res) {
     try {
@@ -521,6 +565,38 @@ async getWeeklyRevenue(req, res) {
     const { storeId } = req.params;
     const sumOrder = await orderService.getTop5Product(storeId);
     res.json(sumOrder)
+  },
+  async getStoreRevenue (req, res){
+    const { storeId } = req.params;
+
+    try {
+        // Kiểm tra storeId có được gửi hay không
+        if (!storeId) {
+            return res.status(400).json({ message: 'Store ID is required' });
+        }
+
+        // Lấy danh sách các đơn hàng có trạng thái "Hoàn thành" của cửa hàng
+        const orders = await Order.find({
+            storeId: storeId,
+            status: 'Hoàn thành'
+        }).select('totalPrice totalShip _id'); // Chỉ lấy các trường cần thiết
+
+        // Tính toán thông tin doanh thu
+        const revenueData = orders.map(order => ({
+            orderId: order._id, // Mã đơn hàng
+            totalOrder: order.totalPrice + order.totalShip, // Tổng tiền đơn hàng (gồm tiền ship)
+            orderValue: order.totalPrice, // Giá trị đơn hàng (chỉ tiền đơn)
+            storeRevenue: Math.round(order.totalPrice * 0.65) // Doanh thu thực (65% totalPrice)
+        }));
+
+        return res.status(200).json(revenueData); // Trả về danh sách doanh thu
+    } catch (error) {
+        console.error('Error fetching store revenue:', error);
+        res.status(500).json({ message: 'Server error' });
+    }
+},
+async getOrderStatusCounts(req, res){
+    const sumOrder = await orderService.getOrderStatusCounts();
+    res.json(sumOrder)
   }
-  
 };

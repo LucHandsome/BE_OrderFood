@@ -38,6 +38,10 @@ router.get('/order-of-day/:storeId',orderController.getSumOrderDaily)
 router.get('/order-of-week/:storeId',orderController.getSumOrderWeek)
 router.get('/order-of-month/:storeId',orderController.getSumOrderMonth)
 router.get('/top-5-product/:storeId',orderController.getTop5Product)
+router.get('/store-revenue/:storeId',orderController.getStoreRevenue)
+router.get('/getAllOrder',orderController.getAllOrders)
+router.get('/get-order-by-status',orderController.getOrderStatusCounts)
+
 
 
 module.exports = router;
