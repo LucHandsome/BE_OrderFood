@@ -4,7 +4,7 @@ export declare class Pointer {
     private instance;
     constructor(secretKey: string);
     createPayment: (body: createOrderDto) => Promise<resCreateOrderDto>;
-    cancelOrder: (transactionID: string) => Promise<resCancelOrderDto>;
+    cancelOrder: (orderID: string) => Promise<resCancelOrderDto>;
     refundMoney: (orderID: string) => Promise<any>;
     withdrawMoney: (body: withdrawMoneyDto) => Promise<any>;
     connectedPayment: (body: connectedPaymentDto) => Promise<any>;

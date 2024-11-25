@@ -1,6 +1,6 @@
 {
   "name": "pointer-wallet",
-  "version": "1.0.9",
+  "version": "2.0.1",
   "description": "Node package pointer wallet",
   "main": "lib/index.js",
   "types": "lib/types.d.ts",

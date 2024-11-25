@@ -34,6 +34,17 @@ router.post('/presspay/callback', orderController.handlePressPayCallback);
 router.get('/revenue/weekly/:storeId', orderController.getWeeklyRevenue);
 router.get('/revenue/monthly/:storeId', orderController.getMonthlyRevenue);
 router.get('/revenue/daily/:storeId', orderController.getDailyRevenue);
+
+router.get('/revenue-system-delivery/weekly', orderController.getWeeklySystemRevenueOfDelivery);
+router.get('/revenue-system-delivery/monthly', orderController.getMonthlySystemRevenueOfDelivery);
+router.get('/revenue-system-delivery/daily', orderController.getDailySystemRevenueOfDelivery);
+
+router.get('/revenue-system-order/weekly', orderController.getWeeklySystemRevenueOfOrder);
+router.get('/revenue-system-order/monthly', orderController.getMonthlySystemRevenueOfOrder);
+router.get('/revenue-system-order/daily', orderController.getDailySystemRevenueOfOrder);
+
+router.get('/get-top-object',orderController.getTopStatistics)
+
 router.get('/order-of-day/:storeId',orderController.getSumOrderDaily)
 router.get('/order-of-week/:storeId',orderController.getSumOrderWeek)
 router.get('/order-of-month/:storeId',orderController.getSumOrderMonth)
@@ -41,6 +52,8 @@ router.get('/top-5-product/:storeId',orderController.getTop5Product)
 router.get('/store-revenue/:storeId',orderController.getStoreRevenue)
 router.get('/getAllOrder',orderController.getAllOrders)
 router.get('/get-order-by-status',orderController.getOrderStatusCounts)
+router.get('/getALlObject', orderController.getAllObject)
+router.get('/get-revenue-system', orderController.getRevenueSystem)
 
 
 

@@ -30,7 +30,7 @@
     "nodemailer": "^6.9.15",
     "nodemon": "^3.1.4",
     "oauth-pointer": "^1.0.3",
-    "pointer-wallet": "^1.0.9",
+    "pointer-wallet": "^2.0.1",
     "redis": "^4.7.0",
     "socket.io": "^4.7.5",
     "sso-pointer": "^1.0.7"

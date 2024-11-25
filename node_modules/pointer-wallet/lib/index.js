@@ -26,10 +26,10 @@ class Pointer {
                 throw new Error(error.response.data.message);
             }
         });
-        this.cancelOrder = (transactionID) => __awaiter(this, void 0, void 0, function* () {
+        this.cancelOrder = (orderID) => __awaiter(this, void 0, void 0, function* () {
             try {
                 const response = yield this.instance.post("/cancel-order", {
-                    transactionID,
+                    orderID,
                 });
                 return response.data;
             }
@@ -44,25 +44,27 @@ class Pointer {
                 });
                 return response.data;
             }
-            catch (error) { }
+            catch (error) {
+                throw new Error(error.response.data.message);
+            }
         });
         this.withdrawMoney = (body) => __awaiter(this, void 0, void 0, function* () {
             try {
-                const response = yield this.instance.post("/withdraw", {
-                    body,
-                });
+                const response = yield this.instance.post("/withdraw", body);
                 return response.data;
             }
-            catch (error) { }
+            catch (error) {
+                throw new Error(error.response.data.message);
+            }
         });
         this.connectedPayment = (body) => __awaiter(this, void 0, void 0, function* () {
             try {
-                const response = yield this.instance.post("/connect-wallet/payment", {
-                    body,
-                });
+                const response = yield this.instance.post("/connect-wallet/payment", body);
                 return response.data;
             }
-            catch (error) { }
+            catch (error) {
+                throw new Error(error.response.data.message);
+            }
         });
         this.secretKey = secretKey;
         this.instance = axios_1.default.create({

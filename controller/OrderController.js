@@ -513,8 +513,7 @@ module.exports = {
     takeOrder,
     shipOrder,
     getAllOrders,
-    // Lấy doanh thu theo tuần cho cửa hàng
-async getWeeklyRevenue(req, res) {
+  async getWeeklyRevenue(req, res) {
     try {
       const { storeId } = req.params;  // Lấy storeId từ req.params
       console.log("id: " + storeId)
@@ -524,8 +523,6 @@ async getWeeklyRevenue(req, res) {
       res.status(500).json({ error: 'Lỗi khi lấy doanh thu theo tuần' });
     }
   },
-  
-  // Lấy doanh thu theo tháng cho cửa hàng
   async getMonthlyRevenue(req, res) {
     try {
       const { storeId } = req.params;  // Lấy storeId từ req.params
@@ -535,8 +532,6 @@ async getWeeklyRevenue(req, res) {
       res.status(500).json({ error: 'Lỗi khi lấy doanh thu theo tháng' });
     }
   },
-  
-  // Lấy doanh thu theo năm cho cửa hàng
   async getDailyRevenue(req, res) {
     try {
       const { storeId } = req.params;  // Lấy storeId từ req.params
@@ -598,5 +593,85 @@ async getWeeklyRevenue(req, res) {
 async getOrderStatusCounts(req, res){
     const sumOrder = await orderService.getOrderStatusCounts();
     res.json(sumOrder)
-  }
+  },
+async getAllObject(req, res){
+    const obj = await orderService.getAllObject()
+    const rv = await orderService.getRevenueSystem()
+    res.status(200).json({ message: 'Get successfully' ,data: {obj,rv}})
+},
+async getRevenueSystem(req, res){
+    const rv = await orderService.getRevenueSystem()
+    res.status(200).json(rv)
+},
+  async getWeeklySystemRevenueOfDelivery(req, res) {
+    try {
+      const { storeId } = req.params;  // Lấy storeId từ req.params
+      const revenue = await orderService.getWeeklySystemRevenueOfDelivery(storeId);
+      res.json(revenue);
+    } catch (error) {
+      res.status(500).json({ error: 'Lỗi khi lấy doanh thu theo tuần' });
+    }
+  },
+  async getMonthlySystemRevenueOfDelivery(req, res) {
+    try {
+      const { storeId } = req.params;  // Lấy storeId từ req.params
+      const revenue = await orderService.getMonthlySystemRevenueOfDelivery(storeId);
+      res.json(revenue);
+    } catch (error) {
+      res.status(500).json({ error: 'Lỗi khi lấy doanh thu theo tháng' });
+    }
+  },
+  async getDailySystemRevenueOfDelivery(req, res) {
+    try {
+      const { storeId } = req.params;  // Lấy storeId từ req.params
+      const revenue = await orderService.getDailySystemRevenueOfDelivery(storeId);
+      res.json(revenue);
+    } catch (error) {
+      res.status(500).json({ error: 'Lỗi khi lấy doanh thu theo ngày' });
+    }
+  },
+  async getWeeklySystemRevenueOfOrder(req, res) {
+    try {
+      const { storeId } = req.params;  // Lấy storeId từ req.params
+      const revenue = await orderService.getWeeklySystemRevenueOfOrder(storeId);
+      res.json(revenue);
+    } catch (error) {
+      res.status(500).json({ error: 'Lỗi khi lấy doanh thu theo tuần' });
+    }
+  },
+  async getMonthlySystemRevenueOfOrder(req, res) {
+    try {
+      const { storeId } = req.params;  // Lấy storeId từ req.params
+      const revenue = await orderService.getMonthlySystemRevenueOfOrder(storeId);
+      res.json(revenue);
+    } catch (error) {
+      res.status(500).json({ error: 'Lỗi khi lấy doanh thu theo tháng' });
+    }
+  },
+  async getDailySystemRevenueOfOrder(req, res) {
+    try {
+      const { storeId } = req.params;  // Lấy storeId từ req.params
+      const revenue = await orderService.getDailySystemRevenueOfOrder(storeId);
+      res.json(revenue);
+    } catch (error) {
+      res.status(500).json({ error: 'Lỗi khi lấy doanh thu theo ngày' });
+    }
+  },
+  async getTopStatistics (req, res){
+    try {
+      const topCustomers = await orderService.getTopCustomers();
+      const topStores = await orderService.getTopStores();
+      const topDrivers = await orderService.getTopDrivers();
+  
+      res.status(200).json({
+        topCustomers,
+        topStores,
+        topDrivers,
+      });
+    } catch (error) {
+      console.error("Error fetching top statistics:", error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  },
+  
 };

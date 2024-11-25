@@ -79,11 +79,14 @@ const { addYears } = require('date-fns');
         }
         return wallet;
     }
-    const refund = async(orderId) => {
-        await pointerPayment.refundMoney({
-            orderID: orderId
-        })
-    }
+    const refund = async (orderId) => {
+        try {
+            const res = await pointerPayment.refundMoney(orderId.toString());            
+            console.log(res);
+        } catch (error) {
+            console.error('Lỗi khi thực hiện hoàn tiền:', error.message);
+        }
+    };    
     const updateStatusRefund = async(orderID) => {
         try {
             // Update the order status in the database

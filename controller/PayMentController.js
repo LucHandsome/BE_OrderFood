@@ -31,14 +31,7 @@ const pointerPayment = new Pointer(process.env.POINTER_SECRET_KEY);
     //     const connectUrl = await paymentService.connectWallet(userId)
     //     return connectUrl
     // }
-    const handleWebhookConnectWallet = async(req, res) => {
-        const { status,signature,userID } = req.body
-        console.log("User Id : "+userID)
-        if(status === 200){
-            const accWallet = paymentService.createConnectWallet(userID,signature)
-            res.status(200).json({ message: 'Connect Wallet successfully', accWallet, userId: accWallet._id });
-        }
-    }
+
     // Hàm để xử lý webhook
     const handleWebhook = async(req, res) => {
         const { status, orderID } = req.body; 
@@ -55,6 +48,14 @@ const pointerPayment = new Pointer(process.env.POINTER_SECRET_KEY);
         } else {
             console.log(`Payment failed for order ID: ${orderID}, status: ${status}`);
             return res.status(400).json({ status: status, orderID }); 
+        }
+    }
+    const handleWebhookConnectWallet = async(req, res) => {
+        const { status,signature,userID } = req.body
+        console.log("User Id : "+userID)
+        if(status === 200){
+            const accWallet = paymentService.createConnectWallet(userID,signature)
+            res.status(200).json({ message: 'Connect Wallet successfully', accWallet, userId: accWallet._id });
         }
     }
     const refund = async(req, res) => {
