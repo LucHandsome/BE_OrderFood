@@ -50,6 +50,8 @@ router.get('/order-of-week/:storeId',orderController.getSumOrderWeek)
 router.get('/order-of-month/:storeId',orderController.getSumOrderMonth)
 router.get('/top-5-product/:storeId',orderController.getTop5Product)
 router.get('/store-revenue/:storeId',orderController.getStoreRevenue)
+router.get('/store-revenueex/:storeId',orderController.getStoreRevenueEx)
+
 router.get('/getAllOrder',orderController.getAllOrders)
 router.get('/get-order-by-status',orderController.getOrderStatusCounts)
 router.get('/getALlObject', orderController.getAllObject)

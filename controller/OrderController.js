@@ -590,6 +590,35 @@ module.exports = {
     }
 }
 ,
+async getStoreRevenueEx (req, res){
+    const { storeId } = req.params;
+
+    try {
+        // Kiểm tra storeId có được gửi hay không
+        if (!storeId) {
+            return res.status(400).json({ message: 'Store ID is required' });
+        }
+
+        // Lấy danh sách các đơn hàng có trạng thái "Hoàn thành" của cửa hàng
+        const orders = await Order.find({
+            storeId: storeId,
+            status: 'Hoàn thành'
+        }).select('totalPrice totalShip _id'); // Chỉ lấy các trường cần thiết
+
+        // Tính toán thông tin doanh thu
+        const revenueData = orders.map(order => ({
+            orderId: order._id, // Mã đơn hàng
+            totalOrder: order.totalPrice + order.totalShip, // Tổng tiền đơn hàng (gồm tiền ship)
+            orderValue: order.totalPrice, // Giá trị đơn hàng (chỉ tiền đơn)
+            storeRevenue: Math.round(order.totalPrice * 0.65) // Doanh thu thực (65% totalPrice)
+        }));
+
+        return res.status(200).json(revenueData); // Trả về danh sách doanh thu
+    } catch (error) {
+        console.error('Error fetching store revenue:', error);
+        res.status(500).json({ message: 'Server error' });
+    }
+},
 async getOrderStatusCounts(req, res){
     const sumOrder = await orderService.getOrderStatusCounts();
     res.json(sumOrder)
