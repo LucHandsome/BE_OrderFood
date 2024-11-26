@@ -49,6 +49,8 @@ const { calculateRevenue } = require('../services/OrderService');
             res.status(500).json({ message: error.message });
         }
     }; 
+    // calculateRevenue();
+
     // const connectWallet = async (req, res) => {
     //     const {userId} = req.body
     //     const connectUrl = await paymentService.connectWallet(userId)
@@ -64,7 +66,7 @@ const { calculateRevenue } = require('../services/OrderService');
             const updateResult = await paymentService.updateOrderStatus(orderID);
             const rs = await orderService.getOrderById(orderID);
             const storeId = rs.storeId;
-            const amount = rs.totalPrice * 0.2
+            const amount = rs.totalPrice * 0.8
             await calculateRevenue(storeId,amount)
             if (!updateResult) {
                 console.error(`Order ID ${orderID} not found`);
