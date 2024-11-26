@@ -5,7 +5,7 @@ dotenv.config();
 const orderService = require('../services/OrderService');
 const { Pointer } = require("pointer-wallet");
 const pointerPayment = new Pointer(process.env.POINTER_SECRET_KEY);
-const { calculateRevenue } = require('../services/OrderService');
+const { calculateRevenue, calculateRevenueAfterRefund } = require('../services/OrderService');
 
 
 
