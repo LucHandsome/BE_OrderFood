@@ -13,6 +13,7 @@ const StoreSchema = new mongoose.Schema({
     openingTime: { type: String, required: false }, // Có thể không yêu cầu
     closingTime: { type: String, required: false }, // Có thể không yêu cầu
     storeStatus: { type: String, required: false }, // Có thể không yêu cầu
+    // balance: { type: Number, default}
 });
 
 const Store = mongoose.model('Store', StoreSchema);
