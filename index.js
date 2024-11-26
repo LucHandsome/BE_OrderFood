@@ -35,6 +35,8 @@ const corsOptions = {
 
 // Áp dụng cấu hình CORS
 app.use(cors(corsOptions));
+app.options('*', cors(corsOptions));
+
 
 // Routes
 routes(app);
