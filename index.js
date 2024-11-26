@@ -26,9 +26,15 @@ mongoose.connect(process.env.MONGODB_URI, {
 
 const PORT = process.env.PORT || 3000;
 
+const corsOptions = {
+    origin: ['http://localhost:1306', 'https://oggee-food-fe.vercel.app', 'https://pointer.io.vn'], // Địa chỉ frontend
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'], // Bao gồm cả OPTIONS
+    allowedHeaders: ['Content-Type', 'Authorization'], // Header được phép
+    credentials: true // Cho phép cookie hoặc thông tin xác thực
+};
 
-
-app.use(cors()); // Sử dụng CORS với cấu hình
+// Áp dụng cấu hình CORS
+app.use(cors(corsOptions));
 
 // Routes
 routes(app);
