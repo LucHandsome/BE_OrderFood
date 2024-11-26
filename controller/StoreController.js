@@ -29,12 +29,19 @@ const updateRevenueController = async (req, res) => {
 
     try {
         // Kiểm tra input từ request
-        if (!storeId || !amount || amount < 0) {
+        console.log('storeId:', storeId);  // Debug storeId
+        console.log('amount:', amount);    // Debug amount
+
+        if (!storeId || isNaN(amount) || amount <= 0) {
             return res.status(400).json({ message: 'Store ID và số tiền hợp lệ là bắt buộc' });
         }
 
         // Gọi hàm updateRevenue từ service
-        const updatedStore = await StoreService.updateRevenue(storeId,-amount);
+        const updatedStore = await StoreService.updateRevenue(storeId, -amount); // Giảm số dư
+
+        if (!updatedStore) {
+            return res.status(404).json({ message: 'Không tìm thấy cửa hàng với ID đã cho' });
+        }
 
         // Trả về kết quả thành công
         return res.status(200).json({
@@ -47,6 +54,7 @@ const updateRevenueController = async (req, res) => {
         return res.status(500).json({ message: 'Có lỗi xảy ra', error: error.message });
     }
 };
+
 const updateStoreInformation = async (req, res) => {
     try {
         const { storeId, storeName,avatar, phoneNumber, storeAddress, openingTime, closingTime } = req.body;

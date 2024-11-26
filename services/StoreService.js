@@ -283,12 +283,12 @@ const findOrCreateStore = async (email) => {
     return store;
 };
 const updateRevenue = async (storeId, amount) => {
+    console.log(storeId,amount)
     try {
         // Kiểm tra xem storeId và amount có hợp lệ hay không
-        if (!storeId || !amount || amount < 0) {
-            throw new Error('Store ID và số tiền hợp lệ là bắt buộc');
+        if (!storeId || isNaN(amount)) {
+            throw new Error('Store ID và số tiền hợp lệ là bắt buộc 2');
         }
-
         // Tìm kiếm và cập nhật balance của cửa hàng
         const updatedStore = await Store.findByIdAndUpdate(
             storeId,
@@ -305,9 +305,11 @@ const updateRevenue = async (storeId, amount) => {
         return updatedStore;
     } catch (error) {
         console.error('Lỗi khi cập nhật doanh thu:', error.message);
-        throw new Error(error.message);
+        throw new Error(error.message); // Ném lỗi lên để controller xử lý
     }
 };
+
+
 module.exports = {
     getInforStore,
     updateStore,
