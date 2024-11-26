@@ -6,7 +6,7 @@ const redisClient = require("../redisClient")
 const paymentService = require('../services/paymentservice')
 const { calculateRevenue } = require('../services/OrderService');
 
-calculateRevenue();
+// calculateRevenue();
 const createOrder = async (req, res) => {
     try {
         console.log('Request body:', req.body); // Ghi log chi tiết request
@@ -448,6 +448,7 @@ const getOrderStatus = async (req, res) => {
         res.status(500).json({ message: error.message });
     }
 }
+
 // const getAllOrder = async (req, res) => {
 //     try {
 //       // Kiểm tra dữ liệu đã được cache trong Redis chưa

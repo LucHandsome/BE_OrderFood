@@ -2,8 +2,11 @@
 const paymentService = require('../services/paymentservice');
 const dotenv = require('dotenv');
 dotenv.config();
+const orderService = require('../services/OrderService');
 const { Pointer } = require("pointer-wallet");
 const pointerPayment = new Pointer(process.env.POINTER_SECRET_KEY);
+const { calculateRevenue } = require('../services/OrderService');
+
 
 
     const createPayment = async (req, res) => {
@@ -59,6 +62,10 @@ const pointerPayment = new Pointer(process.env.POINTER_SECRET_KEY);
         
         if (status === 200) {
             const updateResult = await paymentService.updateOrderStatus(orderID);
+            const rs = await orderService.getOrderById(orderID);
+            const storeId = rs.storeId;
+            const amount = rs.totalPrice * 0.2
+            await calculateRevenue(storeId,amount)
             if (!updateResult) {
                 console.error(`Order ID ${orderID} not found`);
                 return res.status(404).send('Order not found'); 

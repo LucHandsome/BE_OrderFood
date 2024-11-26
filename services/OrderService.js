@@ -3,7 +3,7 @@ const Driver = require('../models/Driver');
 const User = require('../models/User')
 const Store = require('../models/Store')
 
-const { getIo } = require('../socket'); 
+const { getIo } = require('../socket');
 const { removeCartItems } = require('../services/cartService');
 const mongoose = require('mongoose')
 const { startOfDay, subDays, isSameDay, format, startOfWeek, endOfWeek, subWeeks, startOfMonth, endOfMonth, subMonths, getISOWeek } = require('date-fns');
@@ -15,37 +15,37 @@ const createOrder = async (orderData) => {
     if (!orderData.deliveryInfo || !orderData.deliveryInfo.name || !orderData.deliveryInfo.phone || !orderData.deliveryInfo.address) {
         throw new Error('deliveryInfo is required and must include name, phone, and address.');
     }
-    
+
     // Kiểm tra cart có ít nhất một sản phẩm
     if (!orderData.cart || !Array.isArray(orderData.cart) || orderData.cart.length === 0) {
         throw new Error('Cart must contain at least one product.');
     }
-    
+
     // Kiểm tra từng sản phẩm trong cart
     orderData.cart.forEach((item, index) => {
         if (!item.name || !item.image || !item.description || !item.quantity || !item.price) {
             throw new Error(`Cart item at index ${index} is missing required fields.`);
         }
     });
-    
+
     // Thiết lập các giá trị mặc định
     orderData.status = 'Chờ xác nhận';
     orderData.driverId = null;
-    
+
     if (!orderData.paymentStatus) {
         orderData.paymentStatus = 'Chưa thanh toán';
     }
-    
+
     const order = new Order(orderData);
     await order.save();
-    const userId =  orderData.customerId
+    const userId = orderData.customerId
     const storeId = orderData.storeId
     const productIdsToRemove = orderData.cart.map(item => item.productId.toString());
     await removeCartItems(userId, storeId, productIdsToRemove);//Xóa các món đã được mua trong giỏ hàng
 
-    const io = getIo(); 
+    const io = getIo();
     io.emit('newOrder', order);
-    
+
     return order;
 };
 //Lấy đơn hàng có trạng thái là Chờ xác nhận
@@ -185,7 +185,7 @@ const shipOrder = async (orderId) => {
         // Kiểm tra trạng thái hiện tại là 'Cửa hàng xác nhận'
         if (order.status === 'Đang giao') {
             order.status = 'Hoàn thành'; // Cập nhật trạng thái
-            order.paymentStatus='Đã thanh toán'
+            order.paymentStatus = 'Đã thanh toán'
             await order.save(); // Lưu đơn hàng đã cập nhật
             return { message: 'Order has been completed successfully' };
         } else {
@@ -206,9 +206,9 @@ const assignOrderToRandomDriver = async (orderId) => {
 
         // Chọn ngẫu nhiên một tài xế
         const randomDriver = drivers[Math.floor(Math.random() * drivers.length)];
-        await Order.findByIdAndUpdate(orderId, { 
-            driverId: randomDriver._id, 
-            status: 'Đang tìm tài xế' 
+        await Order.findByIdAndUpdate(orderId, {
+            driverId: randomDriver._id,
+            status: 'Đang tìm tài xế'
         });
         // Giả định có cơ chế thông báo cho tài xế về đơn hàng
         console.log(`Đã gửi đơn hàng ${orderId} cho tài xế: ${randomDriver._id}`);
@@ -337,7 +337,6 @@ const updatePaymentStatus = async (orderID, status) => {
 const getOrderById = async (id) => {
     try {
         const order = await Order.findById(id); // Sử dụng phương thức tìm theo ID của Mongoose
-
         return order;
     } catch (error) {
         throw new Error(error.message);
@@ -364,7 +363,7 @@ const getOrderStatusCounts = async () => {
     try {
         // Lấy tất cả đơn hàng và đảm bảo giá trị `status` tồn tại
         const orders = await Order.find({}, 'status');
-        
+
         // Khởi tạo bộ đếm
         const statusCounts = {
             new: 0,
@@ -406,7 +405,7 @@ const getOrderStatusCounts = async () => {
         throw new Error("Không thể lấy số lượng trạng thái đơn hàng.");
     }
 };
-const getRevenueSystem = async () =>{
+const getRevenueSystem = async () => {
     const rs = await Order.aggregate([
         {
             $match: {
@@ -414,13 +413,13 @@ const getRevenueSystem = async () =>{
             }
         },
         {
-            $project:{
+            $project: {
                 _id: 0,
                 revenue: "$_id",
                 revenueSystem: {
                     $add: [
-                        { $multiply : [0.2,"$totalPrice"]},
-                        { $multiply: [0.8, "$totalShip"]}
+                        { $multiply: [0.2, "$totalPrice"] },
+                        { $multiply: [0.8, "$totalShip"] }
                     ]
                 }
             }
@@ -428,42 +427,20 @@ const getRevenueSystem = async () =>{
         {
             $group: {
                 _id: null,
-                total: {$sum: "$revenueSystem"}
+                total: { $sum: "$revenueSystem" }
             }
         },
     ])
     return rs;
 }
-const calculateRevenue = async () => {
-    try {
-        // Lấy tất cả các đơn hàng với điều kiện phù hợp
-        const completedOrders = await Order.find({
-            status: 'Hoàn thành',
-            paymentStatus: 'Đã thanh toán'
-        });
-
-        if (!completedOrders || completedOrders.length === 0) {
-            console.log('Không có đơn hàng nào cần tính doanh thu.');
-            return;
-        }
-
-        // Duyệt qua các đơn hàng để cập nhật doanh thu cho từng cửa hàng
-        for (const order of completedOrders) {
-            const store = await Store.findById(order.storeId);
-            if (store) {
-                // Tính doanh thu
-                const revenue = 0.8 * order.totalPrice;
-                // Cập nhật balance cho cửa hàng
-                store.balance += revenue;
-                await store.save();
-                console.log(`Đã cập nhật doanh thu: ${revenue} cho cửa hàng ${store._id}`);
-            } else {
-                console.error(`Không tìm thấy cửa hàng với ID: ${order.storeId}`);
-            }
-        }
-        console.log('Tính doanh thu hoàn tất.');
-    } catch (error) {
-        console.error('Lỗi khi tính doanh thu:', error.message);
+const calculateRevenue = async (storeId, amount) => {
+    const store = await Store.findById(storeId);
+    if (store) {
+        // Cập nhật balance cho cửa hàng
+        store.balance += amount;
+        await store.save();
+    } else {
+        console.error(`Không tìm thấy cửa hàng với ID`);
     }
 };
 
@@ -476,7 +453,7 @@ module.exports = {
     findOrdersByStoreAndStatus,
     findOrdersByStoreAndStatus2,
     updatePaymentStatus,
-    getOrderById, 
+    getOrderById,
     getOrdersByStatusForCustomer, //Lấy đơn hàng có trạng thái là Chờ xác nhận,
     getOrdersByCustomerId,
     cancelOrder,
@@ -499,11 +476,11 @@ module.exports = {
         const now = new Date();
         const startOfWeek = new Date(now.setDate(now.getDate() - now.getDay() + 1)); // Thứ Hai đầu tuần
         startOfWeek.setHours(0, 0, 0, 0);
-    
+
         const endOfWeek = new Date(startOfWeek);
         endOfWeek.setDate(startOfWeek.getDate() + 6); // Chủ Nhật
         endOfWeek.setHours(23, 59, 59, 999);
-    
+
         // const startOfWeek = startOfWeek(new Date()); // Bắt đầu tuần này
         // const endOfWeek = endOfWeek(new Date()); // Kết thúc tuần này
         console.log(startOfWeek)
@@ -525,7 +502,7 @@ module.exports = {
             },
             { $sort: { "_id": 1 } }
         ]);
-    
+
         // Chuẩn hóa dữ liệu trả về với doanh thu mặc định là 0 cho các ngày không có doanh thu
         const daysOfWeek = ["Chủ Nhật", "Thứ Hai", "Thứ Ba", "Thứ Tư", "Thứ Năm", "Thứ Sáu", "Thứ Bảy"];
         const formattedRevenue = Array.from({ length: 7 }, (_, index) => {
@@ -535,7 +512,7 @@ module.exports = {
                 totalRevenue: dayRevenue ? dayRevenue.totalRevenue : 0
             };
         });
-    
+
         return formattedRevenue;
     },
     // Lấy doanh thu theo tháng cho từng cửa hàng
@@ -578,7 +555,7 @@ module.exports = {
     async getDailyRevenue(storeId) {
         const startOfDay = new Date();
         startOfDay.setHours(0, 0, 0, 0); // Đặt thời gian bắt đầu ngày (0h00)
-        
+
         const endOfDay = new Date();
         endOfDay.setHours(23, 59, 59, 999); // Đặt thời gian kết thúc ngày (23h59)
 
@@ -609,7 +586,7 @@ module.exports = {
         });
 
         return formattedRevenue;
-    }, 
+    },
     async getSumOrderDaily(storeId) {
         const today = new Date();
         const start = new Date(today);
@@ -733,7 +710,7 @@ module.exports = {
             {
                 $group: {
                     _id: "$_id.status", // Nhóm lại theo trạng thái
-                    orders: { 
+                    orders: {
                         $push: { week: "$_id.week", count: "$count" } // Lưu trữ các tuần và số lượng đơn hàng theo trạng thái
                     }
                 },
@@ -763,7 +740,7 @@ module.exports = {
             });
 
             // Tính phần trăm thay đổi
-            const percentageChange = lastWeekCount === 0 
+            const percentageChange = lastWeekCount === 0
                 ? thisWeekCount > 0 ? 100 : 0
                 : ((thisWeekCount - lastWeekCount) / lastWeekCount) * 100;
 
@@ -802,7 +779,7 @@ module.exports = {
             {
                 $group: {
                     _id: "$_id.status", // Nhóm lại theo trạng thái
-                    orders: { 
+                    orders: {
                         $push: { month: "$_id.month", count: "$count" } // Lưu trữ các tháng và số lượng đơn hàng theo trạng thái
                     }
                 },
@@ -832,7 +809,7 @@ module.exports = {
             });
 
             // Tính phần trăm thay đổi
-            const percentageChange = lastMonthCount === 0 
+            const percentageChange = lastMonthCount === 0
                 ? thisMonthCount > 0 ? 100 : 0
                 : ((thisMonthCount - lastMonthCount) / lastMonthCount) * 100;
 
@@ -847,62 +824,62 @@ module.exports = {
         return result;
     }
     ,
-    async getTop5Product(storeId){
+    async getTop5Product(storeId) {
         const start = startOfMonth(new Date()); // Bắt đầu tháng này
         const end = endOfMonth(new Date()); // Kết thúc tháng này
 
         const result = await Order.aggregate([
             {
-              $match: {
-                storeId: new mongoose.Types.ObjectId(storeId), // Lọc theo storeId
-                status: 'Hoàn thành', 
-                createdAt: { $gte: start, $lt: end }, // Lọc theo khoảng thời gian
-              },
+                $match: {
+                    storeId: new mongoose.Types.ObjectId(storeId), // Lọc theo storeId
+                    status: 'Hoàn thành',
+                    createdAt: { $gte: start, $lt: end }, // Lọc theo khoảng thời gian
+                },
             },
             {
-              $unwind: "$cart", // Tách các sản phẩm trong giỏ hàng
+                $unwind: "$cart", // Tách các sản phẩm trong giỏ hàng
             },
             {
-              $group: {
-                _id: "$cart.productId", // Nhóm theo productId
-                name: { $first: "$cart.name" }, // Lấy tên sản phẩm đầu tiên
-                photo: { $first: "$cart.image"},
-                price: { $first: "$cart.price"},
-                totalSold: { $sum: "$cart.quantity" }, // Tổng số lượng bán
-              },
+                $group: {
+                    _id: "$cart.productId", // Nhóm theo productId
+                    name: { $first: "$cart.name" }, // Lấy tên sản phẩm đầu tiên
+                    photo: { $first: "$cart.image" },
+                    price: { $first: "$cart.price" },
+                    totalSold: { $sum: "$cart.quantity" }, // Tổng số lượng bán
+                },
             },
             {
-              $sort: { totalSold: -1 }, // Sắp xếp giảm dần theo số lượng bán
+                $sort: { totalSold: -1 }, // Sắp xếp giảm dần theo số lượng bán
             },
             {
-              $facet: {
-                topProducts: [{ $limit: 5 }], // Lấy 5 sản phẩm bán chạy nhất
-                others: [
-                  { $skip: 5 },
-                  { $group: { _id: "Other", totalSold: { $sum: "$totalSold" } } }, // Gộp các sản phẩm còn lại
-                ],
-              },
+                $facet: {
+                    topProducts: [{ $limit: 5 }], // Lấy 5 sản phẩm bán chạy nhất
+                    others: [
+                        { $skip: 5 },
+                        { $group: { _id: "Other", totalSold: { $sum: "$totalSold" } } }, // Gộp các sản phẩm còn lại
+                    ],
+                },
             },
-          ]);
-                            
+        ]);
+
         return result;
     },
-    async getAllObject(){
+    async getAllObject() {
         const users = await User.countDocuments();
         const stores = await Store.countDocuments();
         const drivers = await Driver.countDocuments()
         const orders = await Order.countDocuments();
-        return {users, stores, drivers, orders}
+        return { users, stores, drivers, orders }
     },
     async getWeeklySystemRevenueOfDelivery() {
         const now = new Date();
         const startOfWeek = new Date(now.setDate(now.getDate() - now.getDay() + 1)); // Thứ Hai đầu tuần
         startOfWeek.setHours(0, 0, 0, 0);
-    
+
         const endOfWeek = new Date(startOfWeek);
         endOfWeek.setDate(startOfWeek.getDate() + 6); // Chủ Nhật
         endOfWeek.setHours(23, 59, 59, 999);
-    
+
         // const startOfWeek = startOfWeek(new Date()); // Bắt đầu tuần này
         // const endOfWeek = endOfWeek(new Date()); // Kết thúc tuần này
         console.log(startOfWeek)
@@ -926,12 +903,12 @@ module.exports = {
             {
                 $group: {
                     _id: { $dayOfWeek: "$createdAt" },
-                    totalRevenue: {$sum: "$revenueSystem"}
+                    totalRevenue: { $sum: "$revenueSystem" }
                 }
             },
             { $sort: { "_id": 1 } }
         ]);
-    
+
         // Chuẩn hóa dữ liệu trả về với doanh thu mặc định là 0 cho các ngày không có doanh thu
         const daysOfWeek = ["Chủ Nhật", "Thứ Hai", "Thứ Ba", "Thứ Tư", "Thứ Năm", "Thứ Sáu", "Thứ Bảy"];
         const formattedRevenue = Array.from({ length: 7 }, (_, index) => {
@@ -941,16 +918,16 @@ module.exports = {
                 totalRevenue: dayRevenue ? dayRevenue.totalRevenue : 0
             };
         });
-    
+
         return formattedRevenue;
     },
     async getMonthlySystemRevenueOfDelivery() {
         const startOfYear = new Date(new Date().getFullYear(), 0, 1); // Ngày đầu tiên của năm
         startOfYear.setHours(0, 0, 0, 0);
-    
+
         const endOfYear = new Date(new Date().getFullYear(), 11, 31); // Ngày cuối cùng của năm
         endOfYear.setHours(23, 59, 59, 999);
-    
+
         const revenue = await Order.aggregate([
             {
                 $match: {
@@ -974,7 +951,7 @@ module.exports = {
             },
             { $sort: { "_id": 1 } } // Sắp xếp theo tháng
         ]);
-    
+
         // Chuẩn hóa dữ liệu trả về với doanh thu mặc định là 0 cho các tháng không có doanh thu
         const formattedRevenue = Array.from({ length: 12 }, (_, index) => {
             const monthRevenue = revenue.find(item => item._id === index + 1); // Tìm tháng
@@ -983,13 +960,12 @@ module.exports = {
                 totalRevenue: monthRevenue ? monthRevenue.totalRevenue : 0
             };
         });
-    
         return formattedRevenue;
     },
     async getDailySystemRevenueOfDelivery() {
         const startOfDay = new Date();
         startOfDay.setHours(0, 0, 0, 0); // Đặt thời gian bắt đầu ngày (0h00)
-        
+
         const endOfDay = new Date();
         endOfDay.setHours(23, 59, 59, 999); // Đặt thời gian kết thúc ngày (23h59)
 
@@ -1011,7 +987,7 @@ module.exports = {
             {
                 $group: {
                     _id: { $hour: "$createdAt" }, // Nhóm theo giờ
-                    totalRevenue: {$sum: "$revenueSystem"}
+                    totalRevenue: { $sum: "$revenueSystem" }
                 },
             },
             { $sort: { "_id": 1 } }, // Sắp xếp theo giờ tăng dần
@@ -1032,11 +1008,11 @@ module.exports = {
         const now = new Date();
         const startOfWeek = new Date(now.setDate(now.getDate() - now.getDay() + 1)); // Thứ Hai đầu tuần
         startOfWeek.setHours(0, 0, 0, 0);
-    
+
         const endOfWeek = new Date(startOfWeek);
         endOfWeek.setDate(startOfWeek.getDate() + 6); // Chủ Nhật
         endOfWeek.setHours(23, 59, 59, 999);
-    
+
         // const startOfWeek = startOfWeek(new Date()); // Bắt đầu tuần này
         // const endOfWeek = endOfWeek(new Date()); // Kết thúc tuần này
         console.log(startOfWeek)
@@ -1060,12 +1036,12 @@ module.exports = {
             {
                 $group: {
                     _id: { $dayOfWeek: "$createdAt" },
-                    totalRevenue: {$sum: "$revenueSystem"}
+                    totalRevenue: { $sum: "$revenueSystem" }
                 }
             },
             { $sort: { "_id": 1 } }
         ]);
-    
+
         // Chuẩn hóa dữ liệu trả về với doanh thu mặc định là 0 cho các ngày không có doanh thu
         const daysOfWeek = ["Chủ Nhật", "Thứ Hai", "Thứ Ba", "Thứ Tư", "Thứ Năm", "Thứ Sáu", "Thứ Bảy"];
         const formattedRevenue = Array.from({ length: 7 }, (_, index) => {
@@ -1075,16 +1051,16 @@ module.exports = {
                 totalRevenue: dayRevenue ? dayRevenue.totalRevenue : 0
             };
         });
-    
+
         return formattedRevenue;
     },
     async getMonthlySystemRevenueOfOrder() {
         const startOfYear = new Date(new Date().getFullYear(), 0, 1); // Ngày đầu tiên của năm
         startOfYear.setHours(0, 0, 0, 0);
-    
+
         const endOfYear = new Date(new Date().getFullYear(), 11, 31); // Ngày cuối cùng của năm
         endOfYear.setHours(23, 59, 59, 999);
-    
+
         const revenue = await Order.aggregate([
             {
                 $match: {
@@ -1108,7 +1084,7 @@ module.exports = {
             },
             { $sort: { "_id": 1 } } // Sắp xếp theo tháng
         ]);
-    
+
         // Chuẩn hóa dữ liệu trả về với doanh thu mặc định là 0 cho các tháng không có doanh thu
         const formattedRevenue = Array.from({ length: 12 }, (_, index) => {
             const monthRevenue = revenue.find(item => item._id === index + 1); // Tìm tháng
@@ -1117,13 +1093,13 @@ module.exports = {
                 totalRevenue: monthRevenue ? monthRevenue.totalRevenue : 0
             };
         });
-    
+
         return formattedRevenue;
     },
     async getDailySystemRevenueOfOrder() {
         const startOfDay = new Date();
         startOfDay.setHours(0, 0, 0, 0); // Đặt thời gian bắt đầu ngày (0h00)
-        
+
         const endOfDay = new Date();
         endOfDay.setHours(23, 59, 59, 999); // Đặt thời gian kết thúc ngày (23h59)
 
@@ -1145,7 +1121,7 @@ module.exports = {
             {
                 $group: {
                     _id: { $hour: "$createdAt" }, // Nhóm theo giờ
-                    totalRevenue: {$sum: "$revenueSystem"}
+                    totalRevenue: { $sum: "$revenueSystem" }
                 },
             },
             { $sort: { "_id": 1 } }, // Sắp xếp theo giờ tăng dần
@@ -1164,130 +1140,130 @@ module.exports = {
     },
     async getTopCustomers() {
         const topCustomers = await Order.aggregate([
-          {
-            $match: {
-              status: "Hoàn thành", // Lọc các đơn hàng đã hoàn thành
+            {
+                $match: {
+                    status: "Hoàn thành", // Lọc các đơn hàng đã hoàn thành
+                },
             },
-          },
-          {
-            $group: {
-              _id: "$customerId", // Nhóm theo ID khách hàng
-              totalSpent: { $sum: "$totalPrice" }, // Tính tổng giá trị đơn hàng của mỗi khách hàng
+            {
+                $group: {
+                    _id: "$customerId", // Nhóm theo ID khách hàng
+                    totalSpent: { $sum: "$totalPrice" }, // Tính tổng giá trị đơn hàng của mỗi khách hàng
+                },
             },
-          },
-          {
-            $lookup: {
-              from: "users", // Bảng khách hàng
-              localField: "_id", // ID khách hàng
-              foreignField: "_id",
-              as: "customerDetails", // Gắn chi tiết khách hàng
+            {
+                $lookup: {
+                    from: "users", // Bảng khách hàng
+                    localField: "_id", // ID khách hàng
+                    foreignField: "_id",
+                    as: "customerDetails", // Gắn chi tiết khách hàng
+                },
             },
-          },
-          {
-            $unwind: "$customerDetails", // Gỡ mảng chi tiết khách hàng
-          },
-          {
-            $sort: { totalSpent: -1 }, // Sắp xếp giảm dần theo tổng giá trị
-          },
-          {
-            $limit: 5, // Lấy top 5
-          },
-          {
-            $project: {
-              _id: 0,
-              customerId: "$_id",
-              name: "$customerDetails.name",
-              email: "$customerDetails.email",
-              totalSpent: 1,
+            {
+                $unwind: "$customerDetails", // Gỡ mảng chi tiết khách hàng
             },
-          },
+            {
+                $sort: { totalSpent: -1 }, // Sắp xếp giảm dần theo tổng giá trị
+            },
+            {
+                $limit: 5, // Lấy top 5
+            },
+            {
+                $project: {
+                    _id: 0,
+                    customerId: "$_id",
+                    name: "$customerDetails.name",
+                    email: "$customerDetails.email",
+                    totalSpent: 1,
+                },
+            },
         ]);
-      
+
         return topCustomers;
-      },
-      async getTopStores() {
+    },
+    async getTopStores() {
         const topStores = await Order.aggregate([
-          {
-            $match: {
-              status: "Hoàn thành", // Lọc các đơn hàng đã hoàn thành
+            {
+                $match: {
+                    status: "Hoàn thành", // Lọc các đơn hàng đã hoàn thành
+                },
             },
-          },
-          {
-            $group: {
-              _id: "$storeId", // Nhóm theo ID cửa hàng
-              totalRevenue: { $sum: "$totalPrice" }, // Tính tổng doanh thu của mỗi cửa hàng
+            {
+                $group: {
+                    _id: "$storeId", // Nhóm theo ID cửa hàng
+                    totalRevenue: { $sum: "$totalPrice" }, // Tính tổng doanh thu của mỗi cửa hàng
+                },
             },
-          },
-          {
-            $lookup: {
-              from: "stores", // Bảng cửa hàng
-              localField: "_id", // ID cửa hàng
-              foreignField: "_id",
-              as: "storeDetails", // Gắn chi tiết cửa hàng
+            {
+                $lookup: {
+                    from: "stores", // Bảng cửa hàng
+                    localField: "_id", // ID cửa hàng
+                    foreignField: "_id",
+                    as: "storeDetails", // Gắn chi tiết cửa hàng
+                },
             },
-          },
-          {
-            $unwind: "$storeDetails", // Gỡ mảng chi tiết cửa hàng
-          },
-          {
-            $sort: { totalRevenue: -1 }, // Sắp xếp giảm dần theo doanh thu
-          },
-          {
-            $limit: 5, // Lấy top 5
-          },
-          {
-            $project: {
-              _id: 0,
-              storeId: "$_id",
-              storeName: "$storeDetails.storeName",
-              totalRevenue: 1,
+            {
+                $unwind: "$storeDetails", // Gỡ mảng chi tiết cửa hàng
             },
-          },
+            {
+                $sort: { totalRevenue: -1 }, // Sắp xếp giảm dần theo doanh thu
+            },
+            {
+                $limit: 5, // Lấy top 5
+            },
+            {
+                $project: {
+                    _id: 0,
+                    storeId: "$_id",
+                    storeName: "$storeDetails.storeName",
+                    totalRevenue: 1,
+                },
+            },
         ]);
-      
+
         return topStores;
-      },
-      async getTopDrivers() {
+    },
+    async getTopDrivers() {
         const topDrivers = await Order.aggregate([
-          {
-            $match: {
-              status: "Hoàn thành", // Lọc các đơn hàng đã hoàn thành
+            {
+                $match: {
+                    status: "Hoàn thành", // Lọc các đơn hàng đã hoàn thành
+                },
             },
-          },
-          {
-            $group: {
-              _id: "$driverId", // Nhóm theo ID tài xế
-              totalRevenue: { $sum: "$totalShip" }, // Tính tổng doanh thu của mỗi tài xế (shipFee)
+            {
+                $group: {
+                    _id: "$driverId", // Nhóm theo ID tài xế
+                    totalRevenue: { $sum: "$totalShip" }, // Tính tổng doanh thu của mỗi tài xế (shipFee)
+                },
             },
-          },
-          {
-            $lookup: {
-              from: "drivers", // Bảng tài xế
-              localField: "_id", // ID tài xế
-              foreignField: "_id",
-              as: "driverDetails", // Gắn chi tiết tài xế
+            {
+                $lookup: {
+                    from: "drivers", // Bảng tài xế
+                    localField: "_id", // ID tài xế
+                    foreignField: "_id",
+                    as: "driverDetails", // Gắn chi tiết tài xế
+                },
             },
-          },
-          {
-            $unwind: "$driverDetails", // Gỡ mảng chi tiết tài xế
-          },
-          {
-            $sort: { totalRevenue: -1 }, // Sắp xếp giảm dần theo doanh thu
-          },
-          {
-            $limit: 5, // Lấy tối đa 5 tài xế
-          },
-          {
-            $project: {
-              _id: 0,
-              driverId: "$_id",
-              driverName: "$driverDetails.name",
-              phone: "$driverDetails.phone",
-              totalRevenue: 1,
+            {
+                $unwind: "$driverDetails", // Gỡ mảng chi tiết tài xế
             },
-          },
+            {
+                $sort: { totalRevenue: -1 }, // Sắp xếp giảm dần theo doanh thu
+            },
+            {
+                $limit: 5, // Lấy tối đa 5 tài xế
+            },
+            {
+                $project: {
+                    _id: 0,
+                    driverId: "$_id",
+                    driverName: "$driverDetails.name",
+                    phone: "$driverDetails.phone",
+                    totalRevenue: 1,
+                },
+            },
         ]);
-      
+
         return topDrivers;
-      }
+    }
 };
