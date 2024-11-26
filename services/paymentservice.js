@@ -129,7 +129,6 @@ const { addYears } = require('date-fns');
             throw new Error(error.message);
         }
     }
-   
     const createOrderWithConnectedWallet = async(signature, amount, currency, message, userID, orderID, providerID, returnUrl, orders) => {
         if (!amount || !currency || !userID || !orderID || !returnUrl || !orders || !signature || !providerID) {
             throw new Error('Missing required parameters');
