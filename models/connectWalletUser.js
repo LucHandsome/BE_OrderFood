@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 
-const connectWalletSchema = new mongoose.Schema({
+const connectWalletUserSchema = new mongoose.Schema({
     userId: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',
@@ -9,6 +9,6 @@ const connectWalletSchema = new mongoose.Schema({
     signature: {type: String, required: true}
 });
 
-const connectWallet = mongoose.model('connectWallet', connectWalletSchema);
+const connectWalletUser = mongoose.model('connectWalletUser', connectWalletUserSchema);
 
-module.exports = connectWallet;
+module.exports = connectWalletUser;

@@ -2,6 +2,7 @@
 
 const Order = require('../models/Order'); // Adjust the path as needed
 const accWallet = require('../models/connectWallet')
+const accWalletUser = require('../models/connectWalletUser')
 const { Pointer } = require("pointer-wallet");
 const dotenv = require('dotenv');
 dotenv.config();
@@ -42,7 +43,6 @@ const { addYears } = require('date-fns');
             }
         }
     }
-
     const updateOrderStatus = async(orderID) => {
         try {
             // Update the order status in the database
@@ -79,10 +79,22 @@ const { addYears } = require('date-fns');
         }
         return wallet;
     }
+    const createConnectWalletUser = async(userId,signature) => {
+        let wallet = await accWalletUser.findOne({ userId });
+        if (!wallet) {
+            // Create a new user if one doesn't exist
+            wallet = await accWalletUser.create({ userId,signature });
+            console.log("New accWallet created:", wallet); // Log newly created user
+        } else {
+            console.log("User found:", user); // Log existing user
+        }
+        return wallet;
+    }
     const refund = async (orderId) => {
         try {
             const res = await pointerPayment.refundMoney(orderId.toString());            
             console.log(res);
+            
         } catch (error) {
             console.error('Lỗi khi thực hiện hoàn tiền:', error.message);
         }
@@ -103,24 +115,84 @@ const { addYears } = require('date-fns');
     }
     const updateCancleStatus = async(orderID) => {
         try {
-            // Update the order status in the database
-            const result = await Order.findByIdAndUpdate(orderID, { paymentStatus: "Đã hủy" }, { new: true });
+            console.log("Updating cancel status for order:", orderID);  // Log kiểm tra
+            const result = await Order.findByIdAndUpdate(orderID, { status: "Đã hủy" }, { new: true });
             
             if (!result) {
+                console.error('Order not found during updateCancelStatus');
                 throw new Error('Order not found');
             }
+            console.log("Cancel status updated successfully:", result);
             return result; // Trả về đơn hàng đã cập nhật
         } catch (error) {
             console.error('Error updating order status:', error);
             throw new Error(error.message);
         }
     }
+   
+    const createOrderWithConnectedWallet = async(signature, amount, currency, message, userID, orderID, providerID, returnUrl, orders) => {
+        if (!amount || !currency || !userID || !orderID || !returnUrl || !orders || !signature || !providerID) {
+            throw new Error('Missing required parameters');
+        }
+
+        try {
+            const response = await pointerPayment.connectedPayment({
+                signature,
+                amount,
+                currency,
+                message,
+                userID,
+                orderID,
+                providerID,
+                returnUrl,
+                orders,
+            });
+
+            
+            return response.data
+        } catch (error) {
+            console.error('Error creating payment order:', error);
+
+            // Kiểm tra nếu có thông báo lỗi từ Pointer API
+            if (error.response && error.response.data) {
+                throw new Error(`Error from Pointer API: ${error.response.data.message || error.message}`);
+            } else {
+                throw new Error('Error creating payment order: ' + error.message);
+            }
+        }
+    }
+    const withDraw = async (email,currency,amount) =>{
+        if(!email || !currency || !amount){
+            throw new Error('Missing required parameters');
+        }
+        const res = await pointerPayment.withdrawMoney({email,currency,amount})
+        return res
+    }
+    const getSignatureByUserId = async (userId) => {
+        try {
+          // Tìm kết quả và chỉ chọn trường 'signature'
+          const wallet = await accWallet.findOne({ userId }, 'signature');
+      
+          if (!wallet) {
+            return { success: false, message: 'Signature not found for the given userId' };
+          }
+      
+          return { success: true, signature: wallet.signature };
+        } catch (error) {
+          console.error("Error fetching signature:", error);
+          return { success: false, message: 'Internal Server Error', error };
+        }
+      };
 module.exports = {
     createOrder,
     updateOrderStatus,
     // connectWallet,
     createConnectWallet,
+    createConnectWalletUser,
     refund,
     updateStatusRefund,
-    updateCancleStatus
+    updateCancleStatus,
+    createOrderWithConnectedWallet,
+    withDraw,
+    getSignatureByUserId
 };
