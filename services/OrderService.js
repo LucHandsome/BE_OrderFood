@@ -443,8 +443,18 @@ const calculateRevenue = async (storeId, amount) => {
         console.error(`Không tìm thấy cửa hàng với ID`);
     }
 };
-
+const calculateRevenueAfterRefund = async (storeId, amount) => {
+    const store = await Store.findById(storeId);
+    if (store) {
+        // Cập nhật balance cho cửa hàng
+        store.balance -= amount;
+        await store.save();
+    } else {
+        console.error(`Không tìm thấy cửa hàng với ID`);
+    }
+};
 module.exports = {
+    calculateRevenueAfterRefund,
     createOrder,
     getPendingOrders,
     updateOrder,

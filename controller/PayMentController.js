@@ -108,6 +108,10 @@ const { calculateRevenue } = require('../services/OrderService');
         if(status === 200){
             const updateResult = await paymentService.updateStatusRefund(orderID);
             const cancelResult = await paymentService.updateCancleStatus(orderID);
+            const rs = await orderService.getOrderById(orderID);
+            const storeId = rs.storeId;
+            const amount = rs.totalPrice * 0.8
+            await calculateRevenueAfterRefund(storeId,amount)
             if (!updateResult || !cancelResult) {
                 console.error(`Order ID ${orderID} not found or update failed`);
                 return res.status(404).send('Order not found or update failed');
