@@ -12,5 +12,6 @@ router.put('/updatestore/:storeId',StoreController.updateStore);
 router.get('/random', StoreController.getRandomStores);
 router.get('/getAllStore', StoreController.getAllStores);
 router.post('/sso/callback-store', StoreController.handleSSOCallbackStore);
+router.put('/update-balance/:storeId',StoreController.updateRevenueController)
 
 module.exports = router;

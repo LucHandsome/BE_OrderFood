@@ -2,6 +2,7 @@
 
 const Order = require('../models/Order'); // Adjust the path as needed
 const accWallet = require('../models/connectWallet')
+const Store = require('../models/Store'); // Đảm bảo đã import model Store
 const accWalletUser = require('../models/connectWalletUser')
 const { Pointer } = require("pointer-wallet");
 const dotenv = require('dotenv');
@@ -193,5 +194,6 @@ module.exports = {
     updateCancleStatus,
     createOrderWithConnectedWallet,
     withDraw,
-    getSignatureByUserId
+    getSignatureByUserId,
+    updateRevenue
 };

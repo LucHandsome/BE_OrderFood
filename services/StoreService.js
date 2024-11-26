@@ -282,6 +282,32 @@ const findOrCreateStore = async (email) => {
     }
     return store;
 };
+const updateRevenue = async (storeId, amount) => {
+    try {
+        // Kiểm tra xem storeId và amount có hợp lệ hay không
+        if (!storeId || !amount || amount < 0) {
+            throw new Error('Store ID và số tiền hợp lệ là bắt buộc');
+        }
+
+        // Tìm kiếm và cập nhật balance của cửa hàng
+        const updatedStore = await Store.findByIdAndUpdate(
+            storeId,
+            { $inc: { balance: amount } }, // Trừ balance với giá trị amount
+            { new: true } // Trả về bản ghi đã cập nhật
+        );
+
+        // Kiểm tra nếu không tìm thấy cửa hàng
+        if (!updatedStore) {
+            throw new Error('Không tìm thấy cửa hàng với ID đã cho');
+        }
+
+        // Trả về cửa hàng đã được cập nhật
+        return updatedStore;
+    } catch (error) {
+        console.error('Lỗi khi cập nhật doanh thu:', error.message);
+        throw new Error(error.message);
+    }
+};
 module.exports = {
     getInforStore,
     updateStore,
@@ -294,6 +320,7 @@ module.exports = {
     getRandomStores,
     getAllStores,
     findOrCreateStore,
+    updateRevenue,
     async isTokenExpired(token) {
         try {
           const decoded = jwtDecode(token);

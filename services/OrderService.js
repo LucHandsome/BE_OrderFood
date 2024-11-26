@@ -434,6 +434,38 @@ const getRevenueSystem = async () =>{
     ])
     return rs;
 }
+const calculateRevenue = async () => {
+    try {
+        // Lấy tất cả các đơn hàng với điều kiện phù hợp
+        const completedOrders = await Order.find({
+            status: 'Hoàn thành',
+            paymentStatus: 'Đã thanh toán'
+        });
+
+        if (!completedOrders || completedOrders.length === 0) {
+            console.log('Không có đơn hàng nào cần tính doanh thu.');
+            return;
+        }
+
+        // Duyệt qua các đơn hàng để cập nhật doanh thu cho từng cửa hàng
+        for (const order of completedOrders) {
+            const store = await Store.findById(order.storeId);
+            if (store) {
+                // Tính doanh thu
+                const revenue = 0.8 * order.totalPrice;
+                // Cập nhật balance cho cửa hàng
+                store.balance += revenue;
+                await store.save();
+                console.log(`Đã cập nhật doanh thu: ${revenue} cho cửa hàng ${store._id}`);
+            } else {
+                console.error(`Không tìm thấy cửa hàng với ID: ${order.storeId}`);
+            }
+        }
+        console.log('Tính doanh thu hoàn tất.');
+    } catch (error) {
+        console.error('Lỗi khi tính doanh thu:', error.message);
+    }
+};
 
 module.exports = {
     createOrder,
@@ -460,6 +492,7 @@ module.exports = {
     getAllOrders,
     getOrderStatusCounts,
     getRevenueSystem,
+    calculateRevenue,
     // Lấy doanh thu theo tuần (Thứ Hai - Chủ Nhật)
     // Lấy doanh thu theo tuần cho từng cửa hàng
     async getWeeklyRevenue(storeId) {
@@ -1257,7 +1290,4 @@ module.exports = {
       
         return topDrivers;
       }
-      
-      
-      
 };

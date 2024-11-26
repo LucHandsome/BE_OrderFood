@@ -23,7 +23,30 @@ const registerStoreWithEmail = async (req, res) => {
     }
 };
 
+const updateRevenueController = async (req, res) => {
+    const { storeId } = req.params; // Lấy storeId từ URL
+    const { amount } = req.body; // Lấy amount từ body request
 
+    try {
+        // Kiểm tra input từ request
+        if (!storeId || !amount || amount < 0) {
+            return res.status(400).json({ message: 'Store ID và số tiền hợp lệ là bắt buộc' });
+        }
+
+        // Gọi hàm updateRevenue từ service
+        const updatedStore = await StoreService.updateRevenue(storeId,-amount);
+
+        // Trả về kết quả thành công
+        return res.status(200).json({
+            message: 'Cập nhật doanh thu thành công',
+            store: updatedStore,
+        });
+    } catch (error) {
+        console.error('Lỗi khi cập nhật doanh thu:', error.message);
+        // Trả về lỗi nếu xảy ra
+        return res.status(500).json({ message: 'Có lỗi xảy ra', error: error.message });
+    }
+};
 const updateStoreInformation = async (req, res) => {
     try {
         const { storeId, storeName,avatar, phoneNumber, storeAddress, openingTime, closingTime } = req.body;
@@ -262,5 +285,6 @@ module.exports = {
     updateStore,
     getRandomStores,
     getAllStores,
-    handleSSOCallbackStore
+    handleSSOCallbackStore,
+    updateRevenueController
 }

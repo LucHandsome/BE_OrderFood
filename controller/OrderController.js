@@ -1,9 +1,12 @@
 const orderService = require('../services/OrderService');
 const Order = require('../models/Order')
 const Driver = require('../models/Driver')
+const Store = require('../models/Store')
 const redisClient = require("../redisClient")
 const paymentService = require('../services/paymentservice')
+const { calculateRevenue } = require('../services/OrderService');
 
+calculateRevenue();
 const createOrder = async (req, res) => {
     try {
         console.log('Request body:', req.body); // Ghi log chi tiết request
@@ -561,7 +564,7 @@ module.exports = {
     const sumOrder = await orderService.getTop5Product(storeId);
     res.json(sumOrder)
   },
-  async getStoreRevenue (req, res){
+  async getStoreRevenue(req, res) {
     const { storeId } = req.params;
 
     try {
@@ -570,26 +573,23 @@ module.exports = {
             return res.status(400).json({ message: 'Store ID is required' });
         }
 
-        // Lấy danh sách các đơn hàng có trạng thái "Hoàn thành" của cửa hàng
-        const orders = await Order.find({
+        // Lấy thông tin cửa hàng từ database
+        const store = await Store.findById(storeId).select('balance');
+        if (!store) {
+            return res.status(404).json({ message: 'Store not found' });
+        }
+
+        // Trả về thông tin doanh thu (balance) của cửa hàng
+        return res.status(200).json({
             storeId: storeId,
-            status: 'Hoàn thành'
-        }).select('totalPrice totalShip _id'); // Chỉ lấy các trường cần thiết
-
-        // Tính toán thông tin doanh thu
-        const revenueData = orders.map(order => ({
-            orderId: order._id, // Mã đơn hàng
-            totalOrder: order.totalPrice + order.totalShip, // Tổng tiền đơn hàng (gồm tiền ship)
-            orderValue: order.totalPrice, // Giá trị đơn hàng (chỉ tiền đơn)
-            storeRevenue: Math.round(order.totalPrice * 0.65) // Doanh thu thực (65% totalPrice)
-        }));
-
-        return res.status(200).json(revenueData); // Trả về danh sách doanh thu
+            balance: store.balance, // Doanh thu thực tế của cửa hàng
+        });
     } catch (error) {
         console.error('Error fetching store revenue:', error);
         res.status(500).json({ message: 'Server error' });
     }
-},
+}
+,
 async getOrderStatusCounts(req, res){
     const sumOrder = await orderService.getOrderStatusCounts();
     res.json(sumOrder)
