@@ -36,7 +36,7 @@ router.post('/connect-user-status', paymentController.handleWebhookConnectWallet
 router.post('/refund-money/:orderId', paymentController.refund);
 router.post('/refund-status', paymentController.handleWebhookRefund);
 router.post('/with-draw',paymentController.withDraw)
-
+router.get('/account/:userId', paymentController.getAccountConnectWallet);
 router.get('/wallet/:userId', async (req, res) => {
   const { userId } = req.params;
 

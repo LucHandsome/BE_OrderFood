@@ -184,36 +184,47 @@ const getRandomProductsController = async (req, res) => {
 };
 
 const searchProducts = async (req, res) => {
-    const query = req.query.query;
+    let query = req.query.keyword;  // Lấy giá trị keyword từ query
+
+    console.log('Query tìm kiếm:', query);  // Kiểm tra giá trị query
+
+    // Kiểm tra xem query có tồn tại hay không
+    if (!query) {
+        return res.status(400).json({ success: false, message: 'Thiếu từ khóa tìm kiếm' });
+    }
+
+    // Kiểm tra và ép kiểu query thành chuỗi nếu nó không phải là chuỗi
+    if (typeof query !== 'string') {
+        query = String(query);
+    }
+
     const isNumericQuery = !isNaN(query);
 
     try {
-        // Xây dựng điều kiện tìm kiếm
+        // Xây dựng điều kiện tìm kiếm chỉ từ bảng Product
         const searchConditions = [
             { Food_name: { $regex: query, $options: 'i' } },
             { Food_detail: { $regex: query, $options: 'i' } },
         ];
-
-        // Thêm điều kiện tìm kiếm theo categoryID nếu hợp lệ
-        if (mongoose.Types.ObjectId.isValid(query)) {
-            searchConditions.push({ categoryID: mongoose.Types.ObjectId(query) });
-        }
 
         // Thêm điều kiện tìm kiếm theo giá nếu query là số
         if (isNumericQuery) {
             searchConditions.push({ Price: parseFloat(query) });
         }
 
-        // Tìm kiếm sản phẩm
+        // Tìm kiếm sản phẩm trong bảng Product
         const products = await Product.find({
             $or: searchConditions
-        })
-        .populate({
-            path: 'Store_id',
-            match: { storeName: { $regex: query, $options: 'i' } },
-            select: 'storeName storeAddress'
-        })
-        .limit(20); // Giới hạn số lượng sản phẩm trả về
+        }).limit(20); // Giới hạn số lượng sản phẩm trả về
+
+        if (products.length === 0) {
+            return res.status(200).json({
+                success: true,
+                results: 0,
+                message: 'Không tìm thấy sản phẩm nào',
+                data: [],
+            });
+        }
 
         res.status(200).json({
             success: true,
