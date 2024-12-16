@@ -449,6 +449,33 @@ const getOrderStatus = async (req, res) => {
     }
 }
 
+const getOrderInfo = async (req, res) => {
+    try {
+        // Extract orderId from route parameters
+        const { orderId } = req.params;
+
+        // Validate orderId
+        if (!orderId) {
+            return res.status(400).json({ message: 'Order ID is required' });
+        }
+
+        // Find the order by ID
+        const order = await Order.findById(orderId);
+
+        // Check if order exists
+        if (order) {
+            return res.status(200).json(order); // Return order information
+        } else {
+            return res.status(404).json({ message: 'Order not found' });
+        }
+    } catch (error) {
+        // Handle unexpected errors
+        console.error('Error fetching order:', error);
+        return res.status(500).json({ message: 'Internal server error' });
+    }
+};
+
+
 // const getAllOrder = async (req, res) => {
 //     try {
 //       // Kiểm tra dữ liệu đã được cache trong Redis chưa
@@ -517,6 +544,7 @@ module.exports = {
     takeOrder,
     shipOrder,
     getAllOrders,
+    getOrderInfo,
   async getWeeklyRevenue(req, res) {
     try {
       const { storeId } = req.params;  // Lấy storeId từ req.params

@@ -44,6 +44,8 @@ router.get('/revenue-system-order/monthly', orderController.getMonthlySystemReve
 router.get('/revenue-system-order/daily', orderController.getDailySystemRevenueOfOrder);
 
 router.get('/get-top-object',orderController.getTopStatistics)
+router.get('/get-order-infor/:orderId',orderController.getOrderInfo)
+
 
 router.get('/order-of-day/:storeId',orderController.getSumOrderDaily)
 router.get('/order-of-week/:storeId',orderController.getSumOrderWeek)
