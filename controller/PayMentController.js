@@ -114,10 +114,17 @@ const handleWebhookConnectWalletUser = async (req, res) => {
     }
 }
 const refund = async (req, res) => {
-    const { orderId } = req.params
-    const result = await paymentService.refund(orderId);
-    res.status(200).json({ result })
-}
+    const { orderId } = req.params;
+
+    try {
+        const result = await paymentService.refund(orderId);
+        res.status(200).json({ success: true, data: result });
+    } catch (error) {
+        console.error('Lỗi trong controller refund:', error.message);
+        res.status(500).json({ success: false, message: 'Hoàn tiền thất bại.' });
+    }
+};
+
 const handleWebhookRefund = async (req, res) => {
     const { status, orderID } = req.body;
     console.log("Webhook status: " + status)
